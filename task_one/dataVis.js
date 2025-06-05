@@ -212,7 +212,6 @@ function clear() {
 }
 
 function renderScatterplot(columns, rows) {
-  console.log(`Rendering scatter plot"`);
   // clear scatter before rendering new plot
   scatter.selectAll("*").remove();
 
@@ -285,12 +284,11 @@ function renderScatterplot(columns, rows) {
         (d[size_dim] - min_size) / (max_size - min_size) + 0.05;
       return radius_percent * (width / 45);
     })
+    .style("cursor", "pointer")
     .style("fill", function (d) {
-      console.log(selected_points);
       for (let key in selected_points) {
         let value = selected_points[key];
         if (_.isEqual(value, d)) {
-          console.log("found a match", d, value);
           return key;
         }
       }
@@ -305,6 +303,7 @@ function renderScatterplot(columns, rows) {
         if (_.isEqual(value, d)) {
           selected_points[key] = null;
           d3.select(this).style("fill", "#000000");
+          render_legend();
           return;
         }
       }
@@ -313,12 +312,16 @@ function renderScatterplot(columns, rows) {
         let value = selected_points[key];
         if (!value) {
           selected_points[key] = d;
-          console.log(key);
           d3.select(this).style("fill", key);
+          render_legend();
           return;
         }
       }
     });
+}
+
+function render_legend() {
+  d3.select("#legend").append("g").data(selected_points).enter().append("p");
 }
 // Helper function to define the domain for the axis
 function _get_min_value_from_data(rows, dimension) {
@@ -330,7 +333,6 @@ function _get_max_value_from_data(rows, dimension) {
 }
 
 function renderRadarChart() {
-  // TODO: show selected items in legend
   // TODO: render polylines in a unique color
 }
 
