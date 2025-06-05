@@ -285,7 +285,17 @@ function renderScatterplot(columns, rows) {
         (d[size_dim] - min_size) / (max_size - min_size) + 0.05;
       return radius_percent * (width / 45);
     })
-    .style("fill", "#000000")
+    .style("fill", function (d) {
+      console.log(selected_points);
+      for (let key in selected_points) {
+        let value = selected_points[key];
+        if (_.isEqual(value, d)) {
+          console.log("found a match", d, value);
+          return key;
+        }
+      }
+      return "#000000";
+    })
     .style("opacity", "0.6")
     .on("click", function (event, d) {
       // Loop over all prev selected values
@@ -295,9 +305,6 @@ function renderScatterplot(columns, rows) {
         if (_.isEqual(value, d)) {
           selected_points[key] = null;
           d3.select(this).style("fill", "#000000");
-          // console.log("item clicked, removing from selected items", d);
-          // console.log("selected points: ", selected_points);
-
           return;
         }
       }
@@ -308,8 +315,6 @@ function renderScatterplot(columns, rows) {
           selected_points[key] = d;
           console.log(key);
           d3.select(this).style("fill", key);
-          // console.log("item clicked, adding to selected items", d);
-          // console.log("selected points: ", selected_points);
           return;
         }
       }
