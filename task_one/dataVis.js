@@ -207,6 +207,9 @@ function clear() {
 
 function renderScatterplot(columns, rows) {
   console.log(`Rendering scatter plot", "for col:${columns}`);
+  // clear scatter before rendering new plot
+  scatter.selectAll("*").remove();
+
   // Adapt X axis
   let x_dimension = readMenu("scatterX");
   let min_x = _get_min_value_from_data(rows, x_dimension);
@@ -218,7 +221,8 @@ function renderScatterplot(columns, rows) {
   // x scalings for scatter plot
   let x = d3
     .scaleLinear()
-    .domain(min_x, max_x)
+    // Added some margin for the axis so we dont have points at the axis themselves
+    .domain([min_x - 0.1 * min_x, max_x + 0.1 * max_x])
     .range([margin.left, width - margin.left - margin.right]);
 
   xAxis = scatter
@@ -234,7 +238,7 @@ function renderScatterplot(columns, rows) {
     .append("text")
     .style("text-anchor", "middle")
     .attr("x", width - margin.right)
-    .text("y");
+    .text(x_dimension);
 
   // Y stuff
   let y_dimension = readMenu("scatterY");
@@ -253,7 +257,7 @@ function renderScatterplot(columns, rows) {
     .append("text")
     .style("text-anchor", "middle")
     .attr("y", margin.top / 2)
-    .text("x");
+    .text(y_dimension);
 
   // TODO size
   let size = readMenu("size");
@@ -294,10 +298,6 @@ function initMenu(id, dimensions, rows) {
 
   $("#" + id).selectmenu({
     select: function () {
-      console.log("select menu!");
-
-      console.log(dimensions, rows);
-
       renderScatterplot(dimensions, rows);
     },
   });
