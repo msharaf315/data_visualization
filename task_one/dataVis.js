@@ -77,9 +77,8 @@ function init() {
         __create_table(columns, rows);
 
         // TODO: parse reader.result data and call the init functions with the parsed data!
-
         initVis({ columns, rows });
-        CreateDataTable(null);
+
         // TODO: possible place to call the dashboard file for Part 2
         initDashboard(null);
       };
@@ -128,51 +127,11 @@ function initVis(_data) {
   let columns = _data.columns;
   let rows = _data.rows;
 
+  // Remove the name from the dimensions
   dimensions = columns.splice(1);
+
   // y scalings for scatterplot
   // TODO: set y domain for each dimension
-
-  let y = d3
-    .scaleLinear()
-    .range([height - margin.bottom - margin.top, margin.top]);
-
-  // x scalings for scatter plot
-  // TODO: set x domain for each dimension
-  let x = d3
-    .scaleLinear()
-    .range([margin.left, width - margin.left - margin.right]);
-
-  // radius scalings for radar chart
-  // TODO: set radius domain for each dimension
-  let r = d3.scaleLinear().range([0, radius]);
-
-  // scatterplot axes
-  yAxis = scatter
-    .append("g")
-    .attr("class", "axis")
-    .attr("transform", "translate(" + margin.left + ")")
-    .call(d3.axisLeft(y));
-
-  yAxisLabel = yAxis
-    .append("text")
-    .style("text-anchor", "middle")
-    .attr("y", margin.top / 2)
-    .text("x");
-
-  xAxis = scatter
-    .append("g")
-    .attr("class", "axis")
-    .attr(
-      "transform",
-      "translate(0, " + (height - margin.bottom - margin.top) + ")"
-    )
-    .call(d3.axisBottom(x));
-
-  xAxisLabel = xAxis
-    .append("text")
-    .style("text-anchor", "middle")
-    .attr("x", width - margin.right)
-    .text("y");
 
   // radar chart axes
   radarAxesAngle = (Math.PI * 2) / dimensions.length;
@@ -182,6 +141,11 @@ function initVis(_data) {
   gridRadius = 0.1;
 
   // radar axes
+
+  // radius scalings for radar chart
+  // TODO: set radius domain for each dimension
+  let r = d3.scaleLinear().range([0, radius]);
+
   radarAxes = radar
     .selectAll(".axis")
     .data(dimensions)
@@ -222,15 +186,15 @@ function initVis(_data) {
 
   // init menu for the visual channels
   channels.forEach(function (c) {
-    initMenu(c, dimensions);
+    initMenu(c, dimensions, rows);
   });
 
   // refresh all select menus
   channels.forEach(function (c) {
     refreshMenu(c);
   });
-
-  renderScatterplot();
+  // Use dimensions not columns here to remove the name column
+  renderScatterplot(dimensions, rows);
   renderRadarChart();
 }
 
@@ -241,21 +205,66 @@ function clear() {
   dataTable.selectAll("*").remove();
 }
 
-//Create Table
-function CreateDataTable(_data) {
-  // TODO: create table and add class
-  // TODO: add headers, row & columns
-  // TODO: add mouseover event
-}
-function renderScatterplot() {
-  // TODO: get domain names from menu and label x- and y-axis
+function renderScatterplot(columns, rows) {
+  console.log(`Rendering scatter plot", "for col:${columns}`);
+  // Adapt X axis
   let x_dimension = readMenu("scatterX");
+  let min_x = _get_min_value_from_data(rows, x_dimension);
+  let max_x = _get_max_value_from_data(rows, x_dimension);
+  // TODO remove
+  console.log(min_x, max_x);
+
+  // scatterplot axes
+  // x scalings for scatter plot
+  let x = d3
+    .scaleLinear()
+    .domain(min_x, max_x)
+    .range([margin.left, width - margin.left - margin.right]);
+
+  xAxis = scatter
+    .append("g")
+    .attr("class", "axis")
+    .attr(
+      "transform",
+      "translate(0, " + (height - margin.bottom - margin.top) + ")"
+    )
+    .call(d3.axisBottom(x));
+
+  xAxisLabel = xAxis
+    .append("text")
+    .style("text-anchor", "middle")
+    .attr("x", width - margin.right)
+    .text("y");
+
+  // Y stuff
   let y_dimension = readMenu("scatterY");
+
+  let y = d3
+    .scaleLinear()
+    .range([height - margin.bottom - margin.top, margin.top]);
+
+  yAxis = scatter
+    .append("g")
+    .attr("class", "axis")
+    .attr("transform", "translate(" + margin.left + ")")
+    .call(d3.axisLeft(y));
+
+  yAxisLabel = yAxis
+    .append("text")
+    .style("text-anchor", "middle")
+    .attr("y", margin.top / 2)
+    .text("x");
+
+  // TODO size
   let size = readMenu("size");
+}
+// Helper function to define the domain for the axis
+function _get_min_value_from_data(rows, dimension) {
+  return Math.min(...rows.map((row) => row[dimension]));
+}
 
-  // TODO: re-render axes
-
-  // TODO: render dots
+function _get_max_value_from_data(rows, dimension) {
+  return Math.max(...rows.map((row) => row[dimension]));
 }
 
 function renderRadarChart() {
@@ -276,16 +285,20 @@ function radarAngle(index) {
 }
 
 // init scatterplot select menu
-function initMenu(id, entries) {
+function initMenu(id, dimensions, rows) {
   $("select#" + id).empty();
 
-  entries.forEach(function (d) {
+  dimensions.forEach(function (d) {
     $("select#" + id).append("<option>" + d + "</option>");
   });
 
   $("#" + id).selectmenu({
     select: function () {
-      renderScatterplot();
+      console.log("select menu!");
+
+      console.log(dimensions, rows);
+
+      renderScatterplot(dimensions, rows);
     },
   });
 }
