@@ -44,8 +44,8 @@ function init() {
 
   // Start at default tab
   document.getElementById("defaultOpen").click();
-  // data table initialization 
-  dataTable = d3.select("#dataTable")
+  // data table initialization
+  dataTable = d3.select("#dataTable");
 
   // scatterplot SVG container and axes
   scatter = d3
@@ -73,12 +73,12 @@ function init() {
       let reader = new FileReader();
       reader.onloadend = function () {
         uploaded_data = reader.result;
-        let {columns, rows} = __parse_data(uploaded_data);
-        __create_table(columns, rows)
+        let { columns, rows } = __parse_data(uploaded_data);
+        __create_table(columns, rows);
 
         // TODO: parse reader.result data and call the init functions with the parsed data!
 
-        initVis(null);
+        initVis({ columns, rows });
         CreateDataTable(null);
         // TODO: possible place to call the dashboard file for Part 2
         initDashboard(null);
@@ -92,41 +92,46 @@ function __parse_data(uploaded_data) {
   parsed_data = d3.csvParse(uploaded_data, d3.autoType);
   columns = parsed_data.columns;
   data = parsed_data.slice(0, -1);
-  return {"columns":columns, "rows": parsed_data};
+  return { columns: columns, rows: parsed_data };
 }
 
-function __create_table(columns, parsed_data){
-    dataTable.append("table")
-                .style("class", "dataTableClass")
-                ;
-    dataTable.append("thead")
+function __create_table(columns, parsed_data) {
+  dataTable.append("table").style("class", "dataTableClass");
+  dataTable
+    .append("thead")
     .append("tr")
     .selectAll("th")
     .data(columns)
     .enter()
     .append("th")
-    .text(d => d)
-    .attr("class", "tableHeaderClass")
-    
-    // Append tbody
-    dataTable.append("tbody")
+    .text((d) => d)
+    .attr("class", "tableHeaderClass");
+
+  // Append tbody
+  dataTable
+    .append("tbody")
     .selectAll("tr")
     .data(parsed_data)
     .enter()
     .append("tr")
     .selectAll("td")
-    .data(row => columns.map(col => row[col]))
+    .data((row) => columns.map((col) => row[col]))
     .enter()
     .append("td")
-    .text(d => d)
-    .attr("class", "tableBodyClass")
+    .text((d) => d)
+    .attr("class", "tableBodyClass");
 }
 
 function initVis(_data) {
   // TODO: parse dimensions (i.e., attributes) from input file
+  console.log("init viz!");
+  let columns = _data.columns;
+  let rows = _data.rows;
 
+  dimensions = columns.splice(1);
   // y scalings for scatterplot
   // TODO: set y domain for each dimension
+
   let y = d3
     .scaleLinear()
     .range([height - margin.bottom - margin.top, margin.top]);
@@ -244,7 +249,12 @@ function CreateDataTable(_data) {
 }
 function renderScatterplot() {
   // TODO: get domain names from menu and label x- and y-axis
+  let x_dimension = readMenu("scatterX");
+  let y_dimension = readMenu("scatterY");
+  let size = readMenu("size");
+
   // TODO: re-render axes
+
   // TODO: render dots
 }
 
