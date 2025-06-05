@@ -210,19 +210,14 @@ function renderScatterplot(columns, rows) {
   // clear scatter before rendering new plot
   scatter.selectAll("*").remove();
 
-  // Adapt X axis
+  // X axis
   let x_dimension = readMenu("scatterX");
   let min_x = _get_min_value_from_data(rows, x_dimension);
   let max_x = _get_max_value_from_data(rows, x_dimension);
-  // TODO remove
-  console.log(min_x, max_x);
 
-  // scatterplot axes
-  // x scalings for scatter plot
   let x = d3
     .scaleLinear()
-    // Added some margin for the axis so we dont have points at the axis themselves
-    .domain([min_x - 0.1 * min_x, max_x + 0.1 * max_x])
+    .domain([min_x, max_x])
     .range([margin.left, width - margin.left - margin.right]);
 
   xAxis = scatter
@@ -240,11 +235,14 @@ function renderScatterplot(columns, rows) {
     .attr("x", width - margin.right)
     .text(x_dimension);
 
-  // Y stuff
+  // Y axis
   let y_dimension = readMenu("scatterY");
+  let min_y = _get_min_value_from_data(rows, y_dimension);
+  let max_y = _get_max_value_from_data(rows, y_dimension);
 
   let y = d3
     .scaleLinear()
+    .domain([min_y, max_y])
     .range([height - margin.bottom - margin.top, margin.top]);
 
   yAxis = scatter
@@ -259,8 +257,30 @@ function renderScatterplot(columns, rows) {
     .attr("y", margin.top / 2)
     .text(y_dimension);
 
-  // TODO size
-  let size = readMenu("size");
+  // Print the dots
+  let size_dim = readMenu("size");
+  let min_size = _get_min_value_from_data(rows, size_dim);
+  let max_size = _get_max_value_from_data(rows, size_dim);
+  console.log(min_size, max_size);
+  scatter
+    .append("g")
+    .selectAll("dot")
+    .data(rows)
+    .enter()
+    .append("circle")
+    .attr("cx", function (d) {
+      return x(d[x_dimension]);
+    })
+    .attr("cy", function (d) {
+      return y(d[y_dimension]);
+    })
+    .attr("r", function (d) {
+      // Normalize size from 0.05 -> 1.05
+      let radius_percent = (d[size_dim] - min_size) / (max_size - min_size) + 0.05;
+      return radius_percent * (width / 45);
+    })
+    .style("fill", "#E11C8C")
+    .style("opacity", "0.6");
 }
 // Helper function to define the domain for the axis
 function _get_min_value_from_data(rows, dimension) {
