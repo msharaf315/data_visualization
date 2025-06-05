@@ -34,6 +34,13 @@ let margin, width, height, radius;
 let scatter, radar, dataTable;
 
 // Add additional variables
+let selected_points = {
+  "#2EE875": null,
+  "#A6443F": null,
+  "#E5271D": null,
+  "#388F59": null,
+  "#664240": null,
+};
 
 function init() {
   // define size of plots
@@ -75,8 +82,6 @@ function init() {
         uploaded_data = reader.result;
         let { columns, rows } = __parse_data(uploaded_data);
         __create_table(columns, rows);
-
-        // TODO: parse reader.result data and call the init functions with the parsed data!
         initVis({ columns, rows });
 
         // TODO: possible place to call the dashboard file for Part 2
@@ -123,13 +128,11 @@ function __create_table(columns, parsed_data) {
 
 function initVis(_data) {
   // TODO: parse dimensions (i.e., attributes) from input file
-  console.log("init viz!");
   let columns = _data.columns;
   let rows = _data.rows;
 
   // Remove the name from the dimensions
   dimensions = columns.splice(1);
-
   // y scalings for scatterplot
   // TODO: set y domain for each dimension
 
@@ -203,10 +206,13 @@ function clear() {
   scatter.selectAll("*").remove();
   radar.selectAll("*").remove();
   dataTable.selectAll("*").remove();
+  for (let key in selected_points) {
+    selected_points[key] = null;
+  }
 }
 
 function renderScatterplot(columns, rows) {
-  console.log(`Rendering scatter plot", "for col:${columns}`);
+  console.log(`Rendering scatter plot"`);
   // clear scatter before rendering new plot
   scatter.selectAll("*").remove();
 
@@ -261,7 +267,6 @@ function renderScatterplot(columns, rows) {
   let size_dim = readMenu("size");
   let min_size = _get_min_value_from_data(rows, size_dim);
   let max_size = _get_max_value_from_data(rows, size_dim);
-  console.log(min_size, max_size);
   scatter
     .append("g")
     .selectAll("dot")
@@ -276,11 +281,39 @@ function renderScatterplot(columns, rows) {
     })
     .attr("r", function (d) {
       // Normalize size from 0.05 -> 1.05
-      let radius_percent = (d[size_dim] - min_size) / (max_size - min_size) + 0.05;
+      let radius_percent =
+        (d[size_dim] - min_size) / (max_size - min_size) + 0.05;
       return radius_percent * (width / 45);
     })
-    .style("fill", "#E11C8C")
-    .style("opacity", "0.6");
+    .style("fill", "#000000")
+    .style("opacity", "0.6")
+    .on("click", function (event, d) {
+      // Loop over all prev selected values
+      for (let key in selected_points) {
+        let value = selected_points[key];
+        // if value was already selected remove it & return
+        if (_.isEqual(value, d)) {
+          selected_points[key] = null;
+          d3.select(this).style("fill", "#000000");
+          // console.log("item clicked, removing from selected items", d);
+          // console.log("selected points: ", selected_points);
+
+          return;
+        }
+      }
+      // add value to dict if it did was not previously selected & return
+      for (let key in selected_points) {
+        let value = selected_points[key];
+        if (!value) {
+          selected_points[key] = d;
+          console.log(key);
+          d3.select(this).style("fill", key);
+          // console.log("item clicked, adding to selected items", d);
+          // console.log("selected points: ", selected_points);
+          return;
+        }
+      }
+    });
 }
 // Helper function to define the domain for the axis
 function _get_min_value_from_data(rows, dimension) {
