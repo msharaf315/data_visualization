@@ -27,7 +27,7 @@ let dimensions = [
 
 // the visual channels we can use for the scatterplot
 let channels = ["scatterX", "scatterY", "size"];
-
+let textColumnName = null;
 // size of the plots
 let margin, width, height, radius;
 // svg containers
@@ -81,6 +81,7 @@ function init() {
       reader.onloadend = function () {
         uploaded_data = reader.result;
         let { columns, rows } = __parse_data(uploaded_data);
+        _setTextColumnName(rows);
         __create_table(columns, rows);
         initVis({ columns, rows });
 
@@ -206,6 +207,7 @@ function clear() {
   scatter.selectAll("*").remove();
   radar.selectAll("*").remove();
   dataTable.selectAll("*").remove();
+  d3.select("#legend_content").selectAll("*").remove();
   for (let key in selected_points) {
     selected_points[key] = null;
   }
@@ -326,50 +328,8 @@ function render_legend() {
   let keys = colors
     .map((color) => selected_points[color])
     .filter((i) => i != null)
-    .map((selectedPoint) => selectedPoint["Name"]);
+    .map((selectedPoint) => selectedPoint[textColumnName]);
 
-  // Svg.append("b").text("Legend:");
-
-  // // Svg.append("svg").attr("width", 300).attr("height", 450).append("g");
-
-  // Svg.append("g");
-
-  // // Add one dot in the legend for each name.
-  // Svg.selectAll("mydots")
-  //   .data(keys)
-  //   .enter()
-  //   .append("circle")
-  //   .attr("cx", 100)
-  //   .attr("cy", function (d, i) {
-  //     return 100 + i * 25;
-  //   }) // 100 is where the first dot appears. 25 is the distance between dots
-  //   .attr("r", 7)
-  //   .attr("class", "color-circle")
-  //   .style("fill", function (d) {
-  //     return color(d);
-  //   });
-
-  // // Add one dot in the legend for each name.
-  // Svg.selectAll("mylabels")
-  //   .data(keys)
-  //   .enter()
-  //   .append("text")
-  //   .attr("x", 120)
-  //   .attr("y", function (d, i) {
-  //     return 100 + i * 25;
-  //   }) // 100 is where the first dot appears. 25 is the distance between dots
-  //   .style("fill", function (d) {
-  //     return "red";
-  //   })
-  //   .text(function (d) {
-  //     console.log(d);
-
-  //     return d;
-  //   })
-  //   .attr("text-anchor", "left")
-  //   .style("alignment-baseline", "middle");
-
-  // select the svg area
   var Svg = d3.select("#legend_content");
   Svg.selectAll("*").remove();
 
@@ -386,12 +346,13 @@ function render_legend() {
     .style("fill", function (d) {
       for (let key in selected_points) {
         let value = selected_points[key];
-        if (value && value["Name"] == d) {
+        if (value && value[textColumnName] == d) {
           return key;
         }
       }
       return "#000000";
-    });
+    })
+    .attr("opacity", "0.6");
 
   // Add one dot in the legend for each name.
   Svg.selectAll("mylabels")
@@ -472,4 +433,18 @@ function openPage(pageName, elmnt, color) {
   }
   document.getElementById(pageName).style.display = "block";
   elmnt.style.backgroundColor = color;
+}
+
+function _setTextColumnName(rows) {
+  console.log(rows[0]);
+  for (let row of rows) {
+    for (let key in row) {
+      let value = row[key];
+      if (!Number(value)) {
+        textColumnName = key;
+        console.log(key);
+        return;
+      }
+    }
+  }
 }
