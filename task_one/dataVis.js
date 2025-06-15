@@ -321,7 +321,93 @@ function renderScatterplot(columns, rows) {
 }
 
 function render_legend() {
-  d3.select("#legend").append("g").data(selected_points).enter().append("p");
+  const colors = Object.keys(selected_points);
+  // create a list of keys
+  let keys = colors
+    .map((color) => selected_points[color])
+    .filter((i) => i != null)
+    .map((selectedPoint) => selectedPoint["Name"]);
+
+  // Svg.append("b").text("Legend:");
+
+  // // Svg.append("svg").attr("width", 300).attr("height", 450).append("g");
+
+  // Svg.append("g");
+
+  // // Add one dot in the legend for each name.
+  // Svg.selectAll("mydots")
+  //   .data(keys)
+  //   .enter()
+  //   .append("circle")
+  //   .attr("cx", 100)
+  //   .attr("cy", function (d, i) {
+  //     return 100 + i * 25;
+  //   }) // 100 is where the first dot appears. 25 is the distance between dots
+  //   .attr("r", 7)
+  //   .attr("class", "color-circle")
+  //   .style("fill", function (d) {
+  //     return color(d);
+  //   });
+
+  // // Add one dot in the legend for each name.
+  // Svg.selectAll("mylabels")
+  //   .data(keys)
+  //   .enter()
+  //   .append("text")
+  //   .attr("x", 120)
+  //   .attr("y", function (d, i) {
+  //     return 100 + i * 25;
+  //   }) // 100 is where the first dot appears. 25 is the distance between dots
+  //   .style("fill", function (d) {
+  //     return "red";
+  //   })
+  //   .text(function (d) {
+  //     console.log(d);
+
+  //     return d;
+  //   })
+  //   .attr("text-anchor", "left")
+  //   .style("alignment-baseline", "middle");
+
+  // select the svg area
+  var Svg = d3.select("#legend_content");
+  Svg.selectAll("*").remove();
+
+  // Add one dot in the legend for each name.
+  Svg.selectAll("mydots")
+    .data(keys)
+    .enter()
+    .append("circle")
+    .attr("cx", 100)
+    .attr("cy", function (d, i) {
+      return 20 + i * 25;
+    }) // 100 is where the first dot appears. 25 is the distance between dots
+    .attr("r", 7)
+    .style("fill", function (d) {
+      for (let key in selected_points) {
+        let value = selected_points[key];
+        if (value && value["Name"] == d) {
+          return key;
+        }
+      }
+      return "#000000";
+    });
+
+  // Add one dot in the legend for each name.
+  Svg.selectAll("mylabels")
+    .data(keys)
+    .enter()
+    .append("text")
+    .attr("x", 120)
+    .attr("y", function (d, i) {
+      return 20 + i * 25;
+    }) // 100 is where the first dot appears. 25 is the distance between dots
+    .style("fill", "black")
+    .text(function (d) {
+      return d;
+    })
+    .attr("text-anchor", "left")
+    .style("alignment-baseline", "middle");
 }
 // Helper function to define the domain for the axis
 function _get_min_value_from_data(rows, dimension) {
