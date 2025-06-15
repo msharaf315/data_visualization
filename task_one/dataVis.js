@@ -128,12 +128,12 @@ function __create_table(columns, parsed_data) {
 }
 
 function initVis(_data) {
-  // TODO: parse dimensions (i.e., attributes) from input file
-  let columns = _data.columns;
   let rows = _data.rows;
 
   // Remove the name from the dimensions
-  dimensions = columns.splice(1);
+  dimensions = _filterNumericAttributes(rows);
+
+
   // y scalings for scatterplot
   // TODO: set y domain for each dimension
 
@@ -436,15 +436,26 @@ function openPage(pageName, elmnt, color) {
 }
 
 function _setTextColumnName(rows) {
-  console.log(rows[0]);
   for (let row of rows) {
     for (let key in row) {
       let value = row[key];
       if (!Number(value)) {
         textColumnName = key;
-        console.log(key);
         return;
       }
     }
   }
+}
+
+function _filterNumericAttributes(rows) {
+  let numericAttributes = [];
+  for (let key in rows[0]) {
+    let value = rows[0][key];
+    if (Number(value)) {
+      numericAttributes.push(key);
+    }
+  }
+  console.log(numericAttributes);
+
+  return numericAttributes;
 }
