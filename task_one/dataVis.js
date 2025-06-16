@@ -438,7 +438,7 @@ function render_legend() {
        .enter()
        .append("g")
        .attr("class", ".legend-button")
-       .attr("transform", (d, i) => `translate(300, ${10 + i * 25})`)
+       .attr("transform", (d, i) => `translate(${600 - 30}, ${10 + i * 25})`)
        .on("click", function (event, d) {
          // Replace this with your actual callback logic
          console.log("Clicked legend item:", d);
