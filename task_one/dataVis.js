@@ -9,6 +9,9 @@
  * All rights reserved.
  */
 
+// Radius scales
+let r_scales =[]
+
 // scatterplot axes
 let xAxis, yAxis, xAxisLabel, yAxisLabel;
 // radar chart axes
@@ -133,10 +136,16 @@ function initVis(_data) {
   // Remove the name from the dimensions
   dimensions = _filterNumericAttributes(rows);
 
-
-  // y scalings for scatterplot
-  // TODO: set y domain for each dimension
-
+  // create scales
+  r_scales = dimensions.map((dimension) =>
+    d3
+      .scaleLinear()
+      .domain([
+        _get_min_value_from_data(rows, dimension),
+        _get_max_value_from_data(rows, dimension),
+      ])
+      .range([0, radius])
+  );
   // radar chart axes
   radarAxesAngle = (Math.PI * 2) / dimensions.length;
   let axisRadius = d3.scaleLinear().range([0, radius]);
@@ -145,10 +154,6 @@ function initVis(_data) {
   gridRadius = 0.1;
 
   // radar axes
-
-  // radius scalings for radar chart
-  // TODO: set radius domain for each dimension
-  let r = d3.scaleLinear().range([0, radius]);
 
   radarAxes = radar
     .selectAll(".axis")
@@ -170,9 +175,32 @@ function initVis(_data) {
     .attr("class", "line")
     .style("stroke", "black");
 
-  // TODO: render grid lines in gray
+  let line = d3
+    .line()
+    .x((d) => d.x)
+    .y((d) => d.y);
 
-  // TODO: render correct axes labels
+  
+  let ticks = [2, 4, 6, 8, 10];
+  ticks = ticks.map((t) => {
+    tObject = {};
+    for (let dimension of dimensions) {
+      tObject[dimension] = t;
+    }
+    return tObject;
+  });
+  radar
+    .selectAll("gridLines")
+    .data(ticks)
+    .join((enter) =>
+      enter
+        .append("path")
+        .datum((d) => _getGridlinesCordinates(d))
+        .attr("d", line)
+        .attr("fill", "none")
+        .attr("stroke", "gray")
+    );
+
   radar
     .selectAll(".axisLabel")
     .data(dimensions)
@@ -186,7 +214,7 @@ function initVis(_data) {
     .attr("y", function (d, i) {
       return radarY(axisRadius(textRadius), i);
     })
-    .text("dimension");
+    .text((d) => d);
 
   // init menu for the visual channels
   channels.forEach(function (c) {
@@ -200,6 +228,41 @@ function initVis(_data) {
   // Use dimensions not columns here to remove the name column
   renderScatterplot(dimensions, rows);
   renderRadarChart();
+}
+
+function _getGridlinesCordinates(data_point) {
+  let coordinates = [];
+  // radius scalings for radar chart
+  let gridLineScale = d3
+    .scaleLinear()
+    .domain([0, 10])
+    .range([0, 0.66 * radius]);
+  for (var i = 0; i < dimensions.length; i++) {
+    let ft_name = dimensions[i];
+    value = gridLineScale(data_point[ft_name]);
+    coordinates.push({
+      x: radarX(value, i),
+      y: radarY(value, i),
+    });
+  }
+  coordinates.push(coordinates[0])
+  return coordinates;
+}
+
+function _getPathCoordinates(data_point) {
+  let coordinates = [];
+  // radius scalings for radar chart
+
+  for (var i = 0; i < dimensions.length; i++) {
+    let ft_name = dimensions[i];
+    value = r_scales[i](data_point[ft_name]);
+    coordinate = coordinates.push({
+      x: radarX(value, i),
+      y: radarY(value, i),
+    });
+  }
+  coordinates.push(coordinates[0])
+  return coordinates;
 }
 
 // clear visualizations before loading a new file
@@ -455,7 +518,6 @@ function _filterNumericAttributes(rows) {
       numericAttributes.push(key);
     }
   }
-  console.log(numericAttributes);
 
   return numericAttributes;
 }
