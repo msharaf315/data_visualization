@@ -341,7 +341,7 @@ function renderScatterplot(columns, rows) {
         // if value was already selected remove it & return
         if (_.isEqual(value, d)) {
           selected_points[key] = null;
-          d3.select(this).style("fill", "#000000");
+          d3.select(this).transition().duration(250).style("fill", "#000000");
           render_legend();
           return;
         }
@@ -351,7 +351,7 @@ function renderScatterplot(columns, rows) {
         let value = selected_points[key];
         if (!value) {
           selected_points[key] = d;
-          d3.select(this).style("fill", key);
+          d3.select(this).transition().duration(250).style("fill", key);
           render_legend();
           return;
         }
