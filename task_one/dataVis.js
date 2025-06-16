@@ -11,7 +11,10 @@
 
 // Radius scales
 let r_scales =[]
-
+let line = d3
+  .line()
+  .x((d) => d.x)
+  .y((d) => d.y);
 // scatterplot axes
 let xAxis, yAxis, xAxisLabel, yAxisLabel;
 // radar chart axes
@@ -137,85 +140,6 @@ function initVis(_data) {
   // Remove the name from the dimensions
   dimensions = _filterNumericAttributes(rows);
 
-  // create scales
-  r_scales = dimensions.map((dimension) =>
-    d3
-      .scaleLinear()
-      .domain([
-        _get_min_value_from_data(rows, dimension),
-        _get_max_value_from_data(rows, dimension),
-      ])
-      .range([0, radius])
-  );
-  // radar chart axes
-  radarAxesAngle = (Math.PI * 2) / dimensions.length;
-  let axisRadius = d3.scaleLinear().range([0, radius]);
-  let maxAxisRadius = 0.75,
-    textRadius = 0.8;
-  gridRadius = 0.1;
-
-  // radar axes
-
-  radarAxes = radar
-    .selectAll(".axis")
-    .data(dimensions)
-    .enter()
-    .append("g")
-    .attr("class", "axis");
-
-  radarAxes
-    .append("line")
-    .attr("x1", 0)
-    .attr("y1", 0)
-    .attr("x2", function (d, i) {
-      return radarX(axisRadius(maxAxisRadius), i);
-    })
-    .attr("y2", function (d, i) {
-      return radarY(axisRadius(maxAxisRadius), i);
-    })
-    .attr("class", "line")
-    .style("stroke", "black");
-
-  let line = d3
-    .line()
-    .x((d) => d.x)
-    .y((d) => d.y);
-
-  let ticks = [2, 4, 6, 8, 10];
-  ticks = ticks.map((t) => {
-    tObject = {};
-    for (let dimension of dimensions) {
-      tObject[dimension] = t;
-    }
-    return tObject;
-  });
-  radar
-    .selectAll("gridLines")
-    .data(ticks)
-    .join((enter) =>
-      enter
-        .append("path")
-        .datum((d) => _getGridlinesCordinates(d))
-        .attr("d", line)
-        .attr("fill", "none")
-        .attr("stroke", "gray")
-    );
-
-  radar
-    .selectAll(".axisLabel")
-    .data(dimensions)
-    .enter()
-    .append("text")
-    .attr("text-anchor", "middle")
-    .attr("dy", "0.35em")
-    .attr("x", function (d, i) {
-      return radarX(axisRadius(textRadius), i);
-    })
-    .attr("y", function (d, i) {
-      return radarY(axisRadius(textRadius), i);
-    })
-    .text((d) => d);
-
   // init menu for the visual channels
   channels.forEach(function (c) {
     initMenu(c, dimensions, rows);
@@ -227,7 +151,7 @@ function initVis(_data) {
   });
   // Use dimensions not columns here to remove the name column
   renderScatterplot(dimensions, rows);
-  renderRadarChart();
+  renderRadarChart(rows);
 }
 
 function _getGridlinesCordinates(data_point) {
@@ -478,6 +402,7 @@ function render_legend() {
         .style("font-size", "14px")
         .style("cursor", "pointer");
     });
+  renderRadarChart(rows_global);
 }
 // Helper function to define the domain for the axis
 function _get_min_value_from_data(rows, dimension) {
@@ -488,8 +413,100 @@ function _get_max_value_from_data(rows, dimension) {
   return Math.max(...rows.map((row) => row[dimension]));
 }
 
-function renderRadarChart() {
-  // TODO: render polylines in a unique color
+function renderRadarChart(rows) {
+  radar.selectAll("*").remove();
+
+  // radar chart axes
+  radarAxesAngle = (Math.PI * 2) / dimensions.length;
+  let axisRadius = d3.scaleLinear().range([0, radius]);
+  let maxAxisRadius = 0.75,
+    textRadius = 0.8;
+  gridRadius = 0.1;
+
+  // radar axes
+  r_scales = dimensions.map((dimension) =>
+    d3
+      .scaleLinear()
+      .domain([
+        _get_min_value_from_data(rows, dimension),
+        _get_max_value_from_data(rows, dimension),
+      ])
+      .range([0, maxAxisRadius * radius])
+  );
+  radarAxes = radar
+    .selectAll(".axis")
+    .data(dimensions)
+    .enter()
+    .append("g")
+    .attr("class", "axis");
+
+  radarAxes
+    .append("line")
+    .attr("x1", 0)
+    .attr("y1", 0)
+    .attr("x2", function (d, i) {
+      return radarX(axisRadius(maxAxisRadius), i);
+    })
+    .attr("y2", function (d, i) {
+      return radarY(axisRadius(maxAxisRadius), i);
+    })
+    .attr("class", "line")
+    .style("stroke", "black");
+
+  let ticks = [2, 4, 6, 8, 10];
+  ticks = ticks.map((t) => {
+    tObject = {};
+    for (let dimension of dimensions) {
+      tObject[dimension] = t;
+    }
+    return tObject;
+  });
+  radar
+    .selectAll("gridLines")
+    .data(ticks)
+    .join((enter) =>
+      enter
+        .append("path")
+        .datum((d) => _getGridlinesCordinates(d))
+        .attr("d", line)
+        .attr("fill", "none")
+        .attr("stroke", "gray")
+    );
+
+  radar
+    .selectAll(".axisLabel")
+    .data(dimensions)
+    .enter()
+    .append("text")
+    .attr("text-anchor", "middle")
+    .attr("dy", "0.35em")
+    .attr("x", function (d, i) {
+      return radarX(axisRadius(textRadius), i);
+    })
+    .attr("y", function (d, i) {
+      return radarY(axisRadius(textRadius), i);
+    })
+    .text((d) => d);
+
+  const colors = Object.keys(selected_points);
+  // create a list of keys
+  let keys = colors
+    .map((color) => selected_points[color])
+    .filter((i) => i != null);
+
+  console.log(keys);
+
+  radar
+    .selectAll("radarLines")
+    .data(keys)
+    .join((enter) =>
+      enter
+        .append("path")
+        .datum((d) => _getPathCoordinates(d))
+        .attr("d", line)
+        .attr("fill", "none")
+        .attr("stroke", "red")
+    );
 }
 
 function radarX(radius, index) {
