@@ -432,6 +432,42 @@ function render_legend() {
     })
     .attr("text-anchor", "left")
     .style("alignment-baseline", "middle");
+
+     Svg.selectAll(".legend-button")
+       .data(keys)
+       .enter()
+       .append("g")
+       .attr("class", ".legend-button")
+       .attr("transform", (d, i) => `translate(300, ${10 + i * 25})`)
+       .on("click", function (event, d) {
+         // Replace this with your actual callback logic
+         console.log("Clicked legend item:", d);
+       })
+       .each(function (d, i) {
+         const g = d3.select(this);
+
+         // Draw the button rectangle
+         // Draw white rectangle with black border
+         g.append("rect")
+           .attr("width", 19)
+           .attr("height", 15)
+           .attr("fill", "white")
+           .attr("stroke", "black")
+           .attr("rx", 5)
+           .attr("ry", 5)
+           .style("cursor", "pointer");
+
+         // Add red 'X' in top-right corner of the rectangle
+         g.append("text")
+           .attr("x", 8)
+           .attr("y", 12)
+           .text("×") // Unicode multiplication sign
+           .style("fill", "red")
+           .style("font-weight", "bold")
+           .style("font-size", "14px")
+           .style("cursor", "pointer");
+       });
+
 }
 // Helper function to define the domain for the axis
 function _get_min_value_from_data(rows, dimension) {

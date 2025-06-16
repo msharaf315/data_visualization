@@ -134,6 +134,10 @@ fieldset {
   cursor: pointer;
 }
 
+.legend-button{
+    cursor: pointer;
+}
+
 /* tooltip for the scatterplot */
 div.tooltip {
   position: absolute;
