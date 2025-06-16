@@ -16,7 +16,7 @@ let line = d3
   .x((d) => d.x)
   .y((d) => d.y);
 // scatterplot axes
-let xAxis, yAxis, xAxisLabel, yAxisLabel;
+let xAxis, yAxis, xAxisLabel, yAxisLabel, x, y;
 // radar chart axes
 let radarAxes, radarAxesAngle;
 let rows_global;
@@ -200,8 +200,59 @@ function clear() {
   }
 }
 
+function updateScatterPlot(rows) {
+  // Update Y
+  let y_dimension = readMenu("scatterY");
+  let min_y = _get_min_value_from_data(rows, y_dimension);
+  let max_y = _get_max_value_from_data(rows, y_dimension);
+
+  // Update y-scale
+  y.domain([min_y, max_y]);
+
+  // Animate y-axis
+  yAxis.transition().duration(1000).call(d3.axisLeft(y));
+
+  // Update y-axis label
+  yAxisLabel.text(y_dimension);
+
+  //* update X
+  let x_dimension = readMenu("scatterX");
+  let min_x = _get_min_value_from_data(rows, x_dimension);
+  let max_x = _get_max_value_from_data(rows, x_dimension);
+
+  // Update x-scale
+  x.domain([min_x, max_x]);
+
+  // Animate x-axis
+  xAxis.transition().duration(1000).call(d3.axisBottom(x));
+
+  // Update x-axis label
+  xAxisLabel.text(x_dimension);
+
+  // * Update Size
+  let size_dim = readMenu("size");
+  let min_size = _get_min_value_from_data(rows, size_dim);
+  let max_size = _get_max_value_from_data(rows, size_dim);
+
+  // Animate circles
+  scatter
+    .selectAll("circle")
+    .data(rows)
+    .transition()
+    .duration(1000)
+    .attr("cy", (d) => y(d[y_dimension]))
+    .attr("cx", (d) => x(d[x_dimension]))
+    .attr("r", function (d) {
+      // Normalize size from 0.05 -> 1.05
+      let radius_percent =
+        (d[size_dim] - min_size) / (max_size - min_size) + 0.05;
+      return radius_percent * (width / 45);
+    });
+}
+
 function renderScatterplot(columns, rows) {
   // clear scatter before rendering new plot
+
   scatter.selectAll("*").remove();
 
   // X axis
@@ -209,11 +260,10 @@ function renderScatterplot(columns, rows) {
   let min_x = _get_min_value_from_data(rows, x_dimension);
   let max_x = _get_max_value_from_data(rows, x_dimension);
 
-  let x = d3
+  x = d3
     .scaleLinear()
     .domain([min_x, max_x])
     .range([margin.left, width - margin.left - margin.right]);
-
   xAxis = scatter
     .append("g")
     .attr("class", "axis")
@@ -234,7 +284,7 @@ function renderScatterplot(columns, rows) {
   let min_y = _get_min_value_from_data(rows, y_dimension);
   let max_y = _get_max_value_from_data(rows, y_dimension);
 
-  let y = d3
+  y = d3
     .scaleLinear()
     .domain([min_y, max_y])
     .range([height - margin.bottom - margin.top, margin.top]);
@@ -602,7 +652,8 @@ function initMenu(id, dimensions, rows) {
 
   $("#" + id).selectmenu({
     select: function () {
-      renderScatterplot(dimensions, rows);
+      updateScatterPlot(rows);
+      // renderScatterplot(dimensions, rows, true);
     },
   });
 }
