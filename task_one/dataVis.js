@@ -41,11 +41,11 @@ let scatter, radar, dataTable;
 
 // Add additional variables
 let selected_points = {
-  "#2EE875": null,
-  "#A6443F": null,
-  "#E5271D": null,
-  "#388F59": null,
-  "#664240": null,
+  "#9600EB": null,
+  "#009391": null,
+  "#EBB901": null,
+  "#149909": null,
+  "#761601": null,
 };
 
 function init() {
@@ -364,8 +364,6 @@ function render_legend() {
     .attr("class", ".legend-button")
     .attr("transform", (d, i) => `translate(${600 - 30}, ${10 + i * 25})`)
     .on("click", function (event, d) {
-      console.log("clicked", d);
-
       // Loop over all prev selected values
       for (let key in selected_points) {
         let value = selected_points[key];
@@ -488,25 +486,98 @@ function renderRadarChart(rows) {
     })
     .text((d) => d);
 
+  // selected points plotting
   const colors = Object.keys(selected_points);
   // create a list of keys
   let keys = colors
     .map((color) => selected_points[color])
     .filter((i) => i != null);
-
-  console.log(keys);
-
+  // Plot path
   radar
     .selectAll("radarLines")
     .data(keys)
-    .join((enter) =>
-      enter
-        .append("path")
-        .datum((d) => _getPathCoordinates(d))
-        .attr("d", line)
-        .attr("fill", "none")
-        .attr("stroke", "red")
-    );
+    .enter()
+    .append("path")
+    .style("stroke", function (d) {
+      for (let key in selected_points) {
+        let value = selected_points[key];
+        if (_.isEqual(value, d)) {
+          return key;
+        }
+      }
+      return "#000000";
+    })
+    .style("fill", "none")
+    .style("stroke-width", "7")
+    .style("opacity", "0.6")
+
+    .datum((d) => _getPathCoordinates(d))
+    .attr("d", line);
+
+  // Plot points
+  radar
+    .selectAll(".radar-point-group")
+    .data(keys)
+    .enter()
+    .append("g")
+    .attr("class", "radar-point-group")
+    .attr("fill", function (d) {
+      for (let key in selected_points) {
+        let value = selected_points[key];
+        if (_.isEqual(value, d)) {
+          return key;
+        }
+      }
+      return "#000000";
+    })
+    .each(function (d) {
+      const coordinates = _getPathCoordinates(d); // get points for this line
+
+      // Append a circle for each coordinate
+      d3.select(this)
+        .selectAll("circle")
+        .data(coordinates)
+        .enter()
+        .append("circle")
+        .attr("cx", (c) => c.x)
+        .attr("cy", (c) => c.y)
+        .attr("r", 4)
+        .attr("stroke", function () {
+          for (let key in selected_points) {
+            if (_.isEqual(selected_points[key], d)) return key;
+          }
+          return "#000";
+        })
+        .attr("stroke-width", 2);
+    });
+
+  radar
+    .selectAll(".radar-point-group")
+    .data(keys)
+    .enter()
+    .append("g")
+    .attr("class", "radar-point-group")
+    .each(function (d) {
+      const coordinates = _getPathCoordinates(d); // get points for this line
+
+      // Append a circle for each coordinate
+      d3.select(this)
+        .selectAll("circle")
+        .data(coordinates)
+        .enter()
+        .append("circle")
+        .attr("cx", (c) => c.x)
+        .attr("cy", (c) => c.y)
+        .attr("r", 4)
+        .attr("fill", "red")
+        .attr("stroke", function () {
+          for (let key in selected_points) {
+            if (_.isEqual(selected_points[key], d)) return key;
+          }
+          return "#000";
+        })
+        .attr("stroke-width", 2);
+    });
 }
 
 function radarX(radius, index) {
