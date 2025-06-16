@@ -16,7 +16,7 @@ let r_scales =[]
 let xAxis, yAxis, xAxisLabel, yAxisLabel;
 // radar chart axes
 let radarAxes, radarAxesAngle;
-
+let rows_global;
 let dimensions = [
   "dimension 1",
   "dimension 2",
@@ -84,6 +84,7 @@ function init() {
       reader.onloadend = function () {
         uploaded_data = reader.result;
         let { columns, rows } = __parse_data(uploaded_data);
+        rows_global = rows;
         _setTextColumnName(rows);
         __create_table(columns, rows);
         initVis({ columns, rows });
@@ -180,7 +181,6 @@ function initVis(_data) {
     .x((d) => d.x)
     .y((d) => d.y);
 
-  
   let ticks = [2, 4, 6, 8, 10];
   ticks = ticks.map((t) => {
     tObject = {};
@@ -245,7 +245,7 @@ function _getGridlinesCordinates(data_point) {
       y: radarY(value, i),
     });
   }
-  coordinates.push(coordinates[0])
+  coordinates.push(coordinates[0]);
   return coordinates;
 }
 
@@ -261,7 +261,7 @@ function _getPathCoordinates(data_point) {
       y: radarY(value, i),
     });
   }
-  coordinates.push(coordinates[0])
+  coordinates.push(coordinates[0]);
   return coordinates;
 }
 
@@ -433,41 +433,51 @@ function render_legend() {
     .attr("text-anchor", "left")
     .style("alignment-baseline", "middle");
 
-     Svg.selectAll(".legend-button")
-       .data(keys)
-       .enter()
-       .append("g")
-       .attr("class", ".legend-button")
-       .attr("transform", (d, i) => `translate(${600 - 30}, ${10 + i * 25})`)
-       .on("click", function (event, d) {
-         // Replace this with your actual callback logic
-         console.log("Clicked legend item:", d);
-       })
-       .each(function (d, i) {
-         const g = d3.select(this);
+  Svg.selectAll(".legend-button")
+    .data(keys)
+    .enter()
+    .append("g")
+    .attr("class", ".legend-button")
+    .attr("transform", (d, i) => `translate(${600 - 30}, ${10 + i * 25})`)
+    .on("click", function (event, d) {
+      console.log("clicked", d);
 
-         // Draw the button rectangle
-         // Draw white rectangle with black border
-         g.append("rect")
-           .attr("width", 19)
-           .attr("height", 15)
-           .attr("fill", "white")
-           .attr("stroke", "black")
-           .attr("rx", 5)
-           .attr("ry", 5)
-           .style("cursor", "pointer");
+      // Loop over all prev selected values
+      for (let key in selected_points) {
+        let value = selected_points[key];
+        // if value was already selected remove it & return
+        if (value && value[textColumnName] == d) {
+          selected_points[key] = null;
+          renderScatterplot(null, rows_global);
+          render_legend();
+          return;
+        }
+      }
+    })
+    .each(function (d, i) {
+      const g = d3.select(this);
 
-         // Add red 'X' in top-right corner of the rectangle
-         g.append("text")
-           .attr("x", 8)
-           .attr("y", 12)
-           .text("×") // Unicode multiplication sign
-           .style("fill", "red")
-           .style("font-weight", "bold")
-           .style("font-size", "14px")
-           .style("cursor", "pointer");
-       });
+      // Draw the button rectangle
+      // Draw white rectangle with black border
+      g.append("rect")
+        .attr("width", 19)
+        .attr("height", 15)
+        .attr("fill", "white")
+        .attr("stroke", "black")
+        .attr("rx", 5)
+        .attr("ry", 5)
+        .style("cursor", "pointer");
 
+      // Add red 'X' in top-right corner of the rectangle
+      g.append("text")
+        .attr("x", 8)
+        .attr("y", 12)
+        .text("×") // Unicode multiplication sign
+        .style("fill", "red")
+        .style("font-weight", "bold")
+        .style("font-size", "14px")
+        .style("cursor", "pointer");
+    });
 }
 // Helper function to define the domain for the axis
 function _get_min_value_from_data(rows, dimension) {
