@@ -151,3 +151,25 @@ div.tooltip {
   pointer-events: none;
   font-size: 0.7rem;
 }
+
+
+/* DASHBOARD STYLING */
+.dashboardContainer{
+  padding: 7%;
+  background-color: black;
+  color: white;
+  height: 100vh;
+}
+
+.header{
+    text-align: center;
+    font-size: xxx-large;
+}
+
+.dashboardBody{
+background-color: white;
+color: black;
+}
+/* .lineChartContainer{
+
+} */
