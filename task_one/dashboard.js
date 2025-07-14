@@ -91,14 +91,13 @@ function initLineChart() {
 }
 
 function __parse_data(uploaded_data) {
-  d3.csv(
-    "/Users/sharaf/github/data_visualization/task_two/minors_causes_of_death.csv"
-  ).then(function (data) {
+  d3.csv("minors_causes_of_death.csv").then(function (data) {
     // Column names (keys from the first row object)
     const columns = data.columns;
 
     // All rows as objects
     const rows = data;
+    console.log("Data read");
 
     console.log("Columns:", columns);
     console.log("Rows:", rows);
@@ -127,6 +126,7 @@ function readData() {
 }
 
 function initDashboard() {
-  readData();
+  console.log("init dashboard");
+  __parse_data();
   initLineChart();
 }
