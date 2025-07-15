@@ -1,0 +1,6 @@
+Create virtual env
+
+pip install -r requirements.txt
+cd into task_one_folder
+Run:
+fastapi dev server.py
