@@ -1,6 +1,7 @@
 # %%
 import numpy as np 
 import pandas as pd
+from fastapi.middleware.cors import CORSMiddleware
 
 # %%
 df = pd.read_csv("minors_causes_of_death.csv")
@@ -19,7 +20,7 @@ def _get_line_chart_data(df):
     grouped_df = grouped_df.drop(death_count_columns, axis='columns')
     grouped_df = grouped_df.drop(["country"], axis="columns")
 
-    return grouped_df
+    return grouped_df.to_dict(orient="records")
 
 def _filter_df(df, sex, country, year, cause):
     if country:
@@ -36,18 +37,23 @@ def _filter_df(df, sex, country, year, cause):
 def get_data(df, sex=None, country=None, year=None, cause=None):
     df = _filter_df(df, sex, country, year, cause)
     line_chart_data = _get_line_chart_data(df)
-    response = {"line_chart_data": line_chart_data}
-    print(response)
-    return response
-get_data(df)
+    return {"line_chart_data": line_chart_data}
 
 # %%
 from typing import Union
 
 from fastapi import FastAPI
-
+origins = [
+    "http://127.0.0.1:5500",
+]
 app = FastAPI()
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,  # List of allowed origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all HTTP methods (GET, POST, etc.)
+    allow_headers=["*"],  # Allow all headers
+)
 
 @app.get("/")
 def read_root(

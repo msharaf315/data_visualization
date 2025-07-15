@@ -15,6 +15,7 @@
 // TODO: use descriptive names for variables
 let lineChart;
 let columns, rows;
+let filters = {};
 
 function initLineChart() {
   // set the dimensions and margins of the graph
@@ -90,43 +91,21 @@ function initLineChart() {
   );
 }
 
-function __parse_data(uploaded_data) {
-  d3.csv("minors_causes_of_death.csv").then(function (data) {
-    // Column names (keys from the first row object)
-    const columns = data.columns;
-
-    // All rows as objects
-    const rows = data;
-    console.log("Data read");
-
-    console.log("Columns:", columns);
-    console.log("Rows:", rows);
-  });
-}
-
-function readData() {
-  readFile = function () {
-    // clear existing visualizations
-    clear();
-
-    let reader = new FileReader();
-    reader.onloadend = function () {
-      uploaded_data = reader.result;
-      let { columns, rows } = __parse_data(uploaded_data);
-      rows_global = rows;
-      _setTextColumnName(rows);
-      __create_table(columns, rows);
-      initVis({ columns, rows });
-
-      // TODO: possible place to call the dashboard file for Part 2
-      initDashboard(null);
-    };
-    reader.readAsBinaryString(fileInput.files[0]);
-  };
+function getData() {
+  fetch("http://127.0.0.1:8000/")
+    .then((response) => {
+      return response.json(); // parse JSON data
+    })
+    .then((data) => {
+      console.log(data); // use the data
+    })
+    .catch((error) => {
+      console.error("There was a problem with the fetch operation:", error);
+    });
 }
 
 function initDashboard() {
   console.log("init dashboard");
-  __parse_data();
+  getData();
   initLineChart();
 }
