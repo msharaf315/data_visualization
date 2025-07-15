@@ -1,0 +1,59 @@
+# %%
+import numpy as np 
+import pandas as pd
+
+# %%
+df = pd.read_csv("minors_causes_of_death.csv")
+df = df.drop(['Unnamed: 0', 'code', 'Detailed List Numbers'], axis='columns')
+death_count_columns= ['death_range_0_year', 'death_range_1_year',
+       'death_range_2_year', 'death_range_3_year', 'death_range_4_year',
+       'death_range_5_9', 'death_range_10_14', 'death_range_15_19']
+df.columns 
+
+# %%
+def _get_line_chart_data(df):
+
+    grouped_df = df.groupby(['year', 'Cause'], as_index=False).sum()
+    grouped_df["total_death"] = grouped_df[death_count_columns].sum(axis=1)
+    grouped_df[death_count_columns]
+    grouped_df = grouped_df.drop(death_count_columns, axis='columns')
+    grouped_df = grouped_df.drop(["country"], axis="columns")
+
+    return grouped_df
+
+def _filter_df(df, sex, country, year, cause):
+    if country:
+        df = df[df['country'] == country]
+    if sex:
+        df = df[df['sex'] == sex]
+    if cause:
+        df = df[df['Cause'] == cause]
+    if year:
+        df = df[df['year'] == year]
+
+    return df 
+
+def get_data(df, sex=None, country=None, year=None, cause=None):
+    df = _filter_df(df, sex, country, year, cause)
+    line_chart_data = _get_line_chart_data(df)
+    response = {"line_chart_data": line_chart_data}
+    print(response)
+    return response
+get_data(df)
+
+# %%
+from typing import Union
+
+from fastapi import FastAPI
+
+app = FastAPI()
+
+
+@app.get("/")
+def read_root(
+    sex: Union[str, None] = None,
+    country: Union[str, None] = None,
+    year: Union[str, None] = None,
+    cause: Union[str, None] = None,
+):
+    return get_data(df, sex, country, year, cause)
