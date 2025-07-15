@@ -19,7 +19,9 @@ def _get_line_chart_data(df):
     grouped_df[death_count_columns]
     grouped_df = grouped_df.drop(death_count_columns, axis='columns')
     grouped_df = grouped_df.drop(["country"], axis="columns")
-
+    grouped_df["total_death"] = pd.Series(grouped_df["total_death"], dtype="Int64")
+    grouped_df["year"] = pd.Series(grouped_df["year"], dtype="Int64")
+    print(grouped_df.dtypes)
     return grouped_df.to_dict(orient="records")
 
 def _filter_df(df, sex, country, year, cause):
@@ -62,4 +64,5 @@ def read_root(
     year: Union[str, None] = None,
     cause: Union[str, None] = None,
 ):
+    # print(get_data(df, sex, country, year, cause))
     return get_data(df, sex, country, year, cause)
