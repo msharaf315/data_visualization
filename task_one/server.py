@@ -61,8 +61,8 @@ def _filter_df(
 def get_data(df, country=None, sex=None, year=None, cause=None):
     df = _filter_df(df, country, year, cause, sex)
     line_chart_data = _get_line_chart_data(df)
-    map_chart_data = _get_pie_chart_data(df)
-    pie_chart_data = _get_map_chart_data(df)
+    pie_chart_data = _get_pie_chart_data(df)
+    map_chart_data = _get_map_chart_data(df)
     pictorial_chart_data = _get_pictorial_chart_data(df)
 
     return {

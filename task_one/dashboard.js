@@ -15,14 +15,18 @@
 // TODO: use descriptive names for variables
 let lineChart;
 let columns, rows;
-let filters = {};
 
 let selectedCountry = null;
 
-function createFilters(countries) {
+async function createFilters(countries) {
   const container = document.getElementById("filters");
   container.innerHTML = "";
-  container.appendChild(createDropdown("countrySelect", countries, "Country", val => { selectedCountry = val; updateCharts(); }));
+  container.appendChild(
+    createDropdown("countrySelect", countries, "Country", async (val) => {
+      selectedCountry = val;
+      await updateCharts();
+    })
+  );
 }
 
 function createDropdown(id, options, label, onChange) {
@@ -34,36 +38,29 @@ function createDropdown(id, options, label, onChange) {
   wrapper.appendChild(lbl);
   const select = document.createElement("select");
   select.id = id;
-  options.forEach(option => {
+  options.forEach((option) => {
     const opt = document.createElement("option");
     opt.value = option;
     opt.text = option;
     select.appendChild(opt);
   });
-  select.onchange = function() { onChange(this.value); };
+  select.onchange = function () {
+    onChange(this.value);
+  };
   wrapper.appendChild(select);
   return wrapper;
 }
 
-function updateCharts() {
-  fetchLineChart();
-  fetchPieChart();
-}
+async function updateCharts() {
+  data = await getData();
+  // console.log("fetched data: ");
+  // console.log(data);
 
-function fetchData() {
-  let url = `http://localhost:8080/?country=${encodeURIComponent(
-    selectedCountry
-  )}`;
-  d3.json(url).then(function (response) {
-    drawLineChart(response.line_chart_data);
-  });
+  initLineChart(data["line_chart_data"]);
+  drawPieChart(data["pie_chart_data"]);
 }
 
 function initLineChart(data) {
-  console.log("one item");
-
-  console.log(typeof data[0]["year"]);
-
   // set the dimensions and margins of the graph
   const margin = { top: 10, right: 30, bottom: 30, left: 60 },
     width = 460 - margin.left - margin.right,
@@ -128,6 +125,9 @@ function initLineChart(data) {
 }
 
 function drawPieChart(data) {
+  console.log(`Pie chart data is`);
+  console.log(data);
+
   d3.select("#pieChart").selectAll("*").remove();
   const width = 400,
     height = 400,
@@ -153,9 +153,9 @@ function drawPieChart(data) {
     .append("path")
     .attr("d", arc)
     .attr("fill", (d) => color(d.data.Cause))
-    .on("click", function (event, d) {
+    .on("click", async function (event, d) {
       selectedCause = d.data.Cause;
-      updateCharts();
+      await updateCharts();
     })
     .on("mouseover", function (event, d) {
       const percent = d.data.percentage.toFixed(2);
@@ -187,9 +187,20 @@ function drawPieChart(data) {
     });
 }
 
+async function getData() {
+  return await fetch("http://127.0.0.1:8000/")
+    .then((response) => {
+      return response.json(); // parse JSON data
+    })
+    .then((data) => {
+      return data; // use the data
+    })
+    .catch((error) => {
+      console.error("There was a problem with the fetch operation:", error);
+    });
+}
 
-function initDashboard() {
+async function initDashboard() {
   console.log("init dashboard");
-  __parse_data();
-  initLineChart();
+  await updateCharts();
 }
