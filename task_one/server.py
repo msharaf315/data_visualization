@@ -14,15 +14,27 @@ df.columns
 # %%
 def _get_line_chart_data(df):
 
-    grouped_df = df.groupby(['year', 'Cause'], as_index=False).sum()
+    grouped_df = df.groupby(["year"], as_index=False).sum()
     grouped_df["total_death"] = grouped_df[death_count_columns].sum(axis=1)
-    grouped_df[death_count_columns]
     grouped_df = grouped_df.drop(death_count_columns, axis='columns')
-    grouped_df = grouped_df.drop(["country"], axis="columns")
+    grouped_df = grouped_df.drop(["country", "Cause", "sex"], axis="columns")
     grouped_df["total_death"] = pd.Series(grouped_df["total_death"], dtype="Int64")
-    grouped_df["year"] = pd.Series(grouped_df["year"], dtype="Int64")
+    grouped_df["year"] = pd.Series(grouped_df["total_death"], dtype="datetime64[ns]")
     print(grouped_df.dtypes)
     return grouped_df.to_dict(orient="records")
+
+
+def _get_pie_chart_data(df):
+    pass
+
+
+def _get_map_chart_data(df):
+    pass
+
+
+def _get_pictorial_chart_data(df):
+    pass
+
 
 def _filter_df(df, sex, country, year, cause):
     if country:
@@ -39,7 +51,16 @@ def _filter_df(df, sex, country, year, cause):
 def get_data(df, sex=None, country=None, year=None, cause=None):
     df = _filter_df(df, sex, country, year, cause)
     line_chart_data = _get_line_chart_data(df)
-    return {"line_chart_data": line_chart_data}
+    map_chart_data = _get_pie_chart_data(df)
+    pie_chart_data = _get_map_chart_data(df)
+    pictorial_chart_data = _get_pictorial_chart_data(df)
+
+    return {
+        "line_chart_data": line_chart_data,
+        "map_chart_data": map_chart_data,
+        "pie_chart_data": pie_chart_data,
+        "pictorial_chart_data": pictorial_chart_data,
+    }
 
 # %%
 from typing import Union
