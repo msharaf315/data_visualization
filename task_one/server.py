@@ -36,20 +36,13 @@ def _get_pictorial_chart_data(df):
     pass
 
 
-def _filter_df(df, sex, country, year, cause):
+def _filter_df(df, country):
     if country:
         df = df[df['country'] == country]
-    if sex:
-        df = df[df['sex'] == sex]
-    if cause:
-        df = df[df['Cause'] == cause]
-    if year:
-        df = df[df['year'] == year]
-
     return df 
 
-def get_data(df, sex=None, country=None, year=None, cause=None):
-    df = _filter_df(df, sex, country, year, cause)
+def get_data(df, country=None):
+    df = _filter_df(df, country)
     line_chart_data = _get_line_chart_data(df)
     map_chart_data = _get_pie_chart_data(df)
     pie_chart_data = _get_map_chart_data(df)
@@ -80,7 +73,6 @@ app.add_middleware(
 
 @app.get("/")
 def read_root(
-    sex: Union[str, None] = None,
     country: Union[str, None] = None,
     year: Union[str, None] = None,
     cause: Union[str, None] = None,

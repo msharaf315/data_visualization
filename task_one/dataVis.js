@@ -10,7 +10,7 @@
  */
 
 // Radius scales
-let r_scales =[]
+let r_scales = [];
 let line = d3
   .line()
   .x((d) => d.x)
@@ -50,7 +50,7 @@ let selected_points = {
 
 function init() {
   initDashboard();
-  
+
   // define size of plots
   margin = { top: 20, right: 20, bottom: 20, left: 50 };
   width = 600;

@@ -21,6 +21,9 @@
     <script src="
 https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js
 "></script>
+    <script src="
+    https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js
+    "></script>
     <!-- include d3 -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
 
@@ -32,13 +35,10 @@ https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js
     <script src="dataVis.js"></script>
     <!-- PART 2: include scripts for the dashboard -->
     <script src="dashboard.js"></script>
-
 </head>
-
-<!-- call init function when page has loaded -->
 <body onload="init()">
 
-<h1>Data Visualization Exercise</h1>
+    <h1>Data Visualization Exercise</h1>
 
 <!-- credits -->
 <div id="credits">
@@ -111,17 +111,19 @@ https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js
     <div class="header">
         <h1>What Is Killing Our Children?</h1>
     </div>
+    <div id="filters"></div>
     <div class="dashboardBody">
         <div id="lineChart"></div>
-
+        <h2>Pie Chart: Causes of Death as Percentage</h2>
+    <div id="pieChart"></div>
+    <div id="pieTooltip"></div>
     </div>
-    <!-- TODO: The environment of your dashboard can be freely customized. Here is a general layout to get you started. -->
+
 
 
 
 </div>
 </div>
-
 
 </body>
 </html>
