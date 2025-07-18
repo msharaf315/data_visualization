@@ -4,3 +4,7 @@ data/
 # *.csv
 
 *.pyc
+
+task_one/__pycache__/
+
+task_one/__pycache__/

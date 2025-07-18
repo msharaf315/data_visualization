@@ -61,6 +61,12 @@ async function updateCharts() {
 }
 
 function initLineChart(data) {
+  var formatTime = d3.timeFormat("%Y");
+  data = data.map((item) => ({
+    ...item,
+    date: new Date(item.year, 0, 1), // Month is 0-indexed, so 0 = January
+  }));
+
   // set the dimensions and margins of the graph
   const margin = { top: 10, right: 30, bottom: 30, left: 60 },
     width = 460 - margin.left - margin.right,
@@ -80,7 +86,7 @@ function initLineChart(data) {
     .scaleTime()
     .domain(
       d3.extent(data, function (d) {
-        return +d.year;
+        return d.date;
       })
     )
     .range([0, width]);
@@ -104,6 +110,46 @@ function initLineChart(data) {
 
   // nest function allows to group the calculation per level of a factor
 
+  // Tool tip
+  var div = d3
+    .select("#line-chart-container")
+    .append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
+
+  // svg.selectAll("dot")
+  lineChart
+    .selectAll("dot")
+    .data(data)
+    .enter()
+    .append("circle")
+    .attr("r", 5)
+    .attr("cx", function (d) {
+      return x(d.date);
+    })
+    .attr("cy", function (d) {
+      return y(d.total_death);
+    })
+    .attr("fill", "#ff7f0c")
+    .on("mouseover", function (event, d) {
+      console.log(d);
+
+      div.transition().duration(200).style("opacity", 1);
+      div
+        .html(
+          "year: " +
+            formatTime(d.date) +
+            "<br/>" +
+            "Death count:" +
+            d.total_death.toLocaleString()
+        )
+        .style("left", event.pageX + "px")
+        .style("top", event.pageY - 28 + "px");
+    })
+    .on("mouseout", function (d) {
+      div.transition().duration(500).style("opacity", 0);
+    });
+
   // Add the line
   lineChart
     .append("path")
@@ -116,7 +162,7 @@ function initLineChart(data) {
       d3
         .line()
         .x(function (d) {
-          return x(d.year);
+          return x(d.date);
         })
         .y(function (d) {
           return y(d.total_death);
@@ -125,9 +171,6 @@ function initLineChart(data) {
 }
 
 function drawPieChart(data) {
-  console.log(`Pie chart data is`);
-  console.log(data);
-
   d3.select("#pieChart").selectAll("*").remove();
   const width = 400,
     height = 400,

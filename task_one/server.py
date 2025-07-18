@@ -19,7 +19,7 @@ def _get_line_chart_data(df):
     grouped_df = grouped_df.drop(death_count_columns, axis='columns')
     grouped_df = grouped_df.drop(["country", "Cause", "sex"], axis="columns")
     grouped_df["total_death"] = pd.Series(grouped_df["total_death"], dtype="Int64")
-    grouped_df["year"] = pd.Series(grouped_df["total_death"], dtype="datetime64[ns]")
+    grouped_df["year"] = pd.Series(grouped_df["year"], dtype="Int64")
     print(grouped_df.dtypes)
     return grouped_df.to_dict(orient="records")
 

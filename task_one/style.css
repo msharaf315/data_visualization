@@ -169,7 +169,21 @@ div.tooltip {
 .dashboardBody{
 background-color: white;
 color: black;
+padding: 2%
 }
-/* .lineChartContainer{
 
-} */
+.line-chart-container{
+margin-bottom: 1%;
+margin-left: 1%;
+}
+
+.tooltip {
+      position: absolute;
+      background-color: white;
+      border: 1px solid #ccc;
+      padding: 6px;
+      pointer-events: none;
+      font-size: 12px;
+      border-radius: 4px;
+      box-shadow: 0px 2px 6px rgba(0,0,0,0.2);
+    }
