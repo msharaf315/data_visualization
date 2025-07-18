@@ -9,21 +9,77 @@
  * All rights reserved.
  */
 
-// TODO: File for Part 2
-// TODO: You can edit this file as you wish - add new methods, variables etc. or change/delete existing ones.
+/* Minimal dashboard.js with country filter only */
 
-// TODO: use descriptive names for variables
-let lineChart;
-let columns, rows;
+let selectedCountry = null;
 
-function initLineChart() {
-  // set the dimensions and margins of the graph
+function init() {
+  // Fetch all data to get filter options
+  d3.json("http://localhost:8080/").then(function (response) {
+    const data = response.line_chart_data;
+    const countries = Array.from(new Set(data.map((d) => d.country))).sort();
+    createFilters(countries);
+    selectedCountry = countries[0];
+    updateCharts();
+  });
+}
+
+function createFilters(countries) {
+  const container = document.getElementById("filters");
+  container.innerHTML = "";
+  container.appendChild(createDropdown("countrySelect", countries, "Country", val => { selectedCountry = val; updateCharts(); }));
+}
+
+function createDropdown(id, options, label, onChange) {
+  const wrapper = document.createElement("span");
+  wrapper.style.marginRight = "20px";
+  const lbl = document.createElement("label");
+  lbl.htmlFor = id;
+  lbl.innerText = label + ": ";
+  wrapper.appendChild(lbl);
+  const select = document.createElement("select");
+  select.id = id;
+  options.forEach(option => {
+    const opt = document.createElement("option");
+    opt.value = option;
+    opt.text = option;
+    select.appendChild(opt);
+  });
+  select.onchange = function() { onChange(this.value); };
+  wrapper.appendChild(select);
+  return wrapper;
+}
+
+function updateCharts() {
+  fetchLineChart();
+  fetchPieChart();
+}
+
+function fetchLineChart() {
+  let url = `http://localhost:8080/?country=${encodeURIComponent(selectedCountry)}`;
+  d3.json(url).then(function(response) {
+    drawLineChart(response.line_chart_data);
+  });
+}
+
+function fetchPieChart() {
+  let url = `http://localhost:8080/pie?country=${encodeURIComponent(selectedCountry)}`;
+  d3.json(url).then(function(response) {
+    drawPieChart(response.pie_chart_data);
+  });
+}
+
+function drawLineChart(data) {
+  // Set dimensions and margins
   const margin = { top: 10, right: 30, bottom: 30, left: 60 },
-    width = 460 - margin.left - margin.right,
+    width = 600 - margin.left - margin.right,
     height = 400 - margin.top - margin.bottom;
 
-  // append the svg object to the body of the page
-  lineChart = d3
+  // Remove any previous chart
+  d3.select("#lineChart").selectAll("*").remove();
+
+  // Append SVG
+  const svg = d3
     .select("#lineChart")
     .append("svg")
     .attr("width", width + margin.left + margin.right)
@@ -31,102 +87,88 @@ function initLineChart() {
     .append("g")
     .attr("transform", `translate(${margin.left},${margin.top})`);
 
-  //Read the data
-  d3.csv(
-    "https://raw.githubusercontent.com/holtzy/data_to_viz/master/Example_dataset/3_TwoNumOrdered_comma.csv",
+  // X axis: year
+  const x = d3
+    .scaleLinear()
+    .domain(d3.extent(data, (d) => +d.year))
+    .range([0, width]);
+  svg
+    .append("g")
+    .attr("transform", `translate(0,${height})`)
+    .call(d3.axisBottom(x).tickFormat(d3.format("d")));
 
-    // When reading the csv, I must format variables:
-    function (d) {
-      return { date: d3.timeParse("%Y-%m-%d")(d.date), value: d.value };
-    }
-  ).then(
-    // Now I can use this dataset:
-    function (data) {
-      // Add X axis --> it is a date format
-      const x = d3
-        .scaleTime()
-        .domain(
-          d3.extent(data, function (d) {
-            return d.date;
-          })
-        )
-        .range([0, width]);
-      lineChart
-        .append("g")
-        .attr("transform", `translate(0, ${height})`)
-        .call(d3.axisBottom(x));
+  // Y axis: total_death
+  const y = d3
+    .scaleLinear()
+    .domain([0, d3.max(data, (d) => +d.total_death)])
+    .range([height, 0]);
+  svg.append("g").call(d3.axisLeft(y));
 
-      // Add Y axis
-      const y = d3
-        .scaleLinear()
-        .domain([
-          0,
-          d3.max(data, function (d) {
-            return +d.value;
-          }),
-        ])
-        .range([height, 0]);
-      lineChart.append("g").call(d3.axisLeft(y));
+  // Group data by Cause
+  const causes = Array.from(new Set(data.map((d) => d.Cause)));
+  const color = d3.scaleOrdinal().domain(causes).range(d3.schemeCategory10);
 
-      // Add the line
-      lineChart
-        .append("path")
-        .datum(data)
-        .attr("fill", "none")
-        .attr("stroke", "steelblue")
-        .attr("stroke-width", 1.5)
-        .attr(
-          "d",
-          d3
-            .line()
-            .x(function (d) {
-              return x(d.date);
-            })
-            .y(function (d) {
-              return y(d.value);
-            })
-        );
-    }
-  );
-}
-
-function __parse_data(uploaded_data) {
-  d3.csv("minors_causes_of_death.csv").then(function (data) {
-    // Column names (keys from the first row object)
-    const columns = data.columns;
-
-    // All rows as objects
-    const rows = data;
-    console.log("Data read");
-
-    console.log("Columns:", columns);
-    console.log("Rows:", rows);
+  causes.forEach((cause) => {
+    const causeData = data.filter((d) => d.Cause === cause);
+    svg
+      .append("path")
+      .datum(causeData)
+      .attr("fill", "none")
+      .attr("stroke", color(cause))
+      .attr("stroke-width", 2)
+      .attr(
+        "d",
+        d3
+          .line()
+          .x((d) => x(+d.year))
+          .y((d) => y(+d.total_death))
+      );
   });
 }
 
-function readData() {
-  readFile = function () {
-    // clear existing visualizations
-    clear();
-
-    let reader = new FileReader();
-    reader.onloadend = function () {
-      uploaded_data = reader.result;
-      let { columns, rows } = __parse_data(uploaded_data);
-      rows_global = rows;
-      _setTextColumnName(rows);
-      __create_table(columns, rows);
-      initVis({ columns, rows });
-
-      // TODO: possible place to call the dashboard file for Part 2
-      initDashboard(null);
-    };
-    reader.readAsBinaryString(fileInput.files[0]);
-  };
+function drawPieChart(data) {
+  d3.select("#pieChart").selectAll("*").remove();
+  const width = 400, height = 400, radius = Math.min(width, height) / 2;
+  const svg = d3.select("#pieChart")
+    .append("svg")
+    .attr("width", width)
+    .attr("height", height)
+    .append("g")
+    .attr("transform", `translate(${width / 2},${height / 2})`);
+  const color = d3.scaleOrdinal().domain(data.map(d => d.Cause)).range(d3.schemeCategory10);
+  const pie = d3.pie().value(d => d.total_death);
+  const arc = d3.arc().innerRadius(0).outerRadius(radius);
+  const arcs = pie(data);
+  svg.selectAll("path")
+    .data(arcs)
+    .enter()
+    .append("path")
+    .attr("d", arc)
+    .attr("fill", d => color(d.data.Cause))
+    .on("click", function(event, d) {
+      selectedCause = d.data.Cause;
+      updateCharts();
+    })
+    .on("mouseover", function(event, d) {
+      const percent = d.data.percentage.toFixed(2);
+      d3.select("#pieTooltip")
+        .style("display", "block")
+        .html(`<b>${d.data.Cause}</b><br/>Deaths: ${d.data.total_death}<br/>Percent: ${percent}%`)
+        .style("left", (event.pageX + 10) + "px")
+        .style("top", (event.pageY - 28) + "px");
+    })
+    .on("mouseout", function() {
+      d3.select("#pieTooltip").style("display", "none");
+    });
+  // Add labels to pie slices
+  svg.selectAll("text")
+    .data(arcs)
+    .enter()
+    .append("text")
+    .attr("transform", function(d) { return `translate(${arc.centroid(d)})`; })
+    .attr("text-anchor", "middle")
+    .attr("font-size", "12px")
+    .attr("fill", "#333")
+    .text(function(d) { return `${d.data.Cause}: ${d.data.percentage.toFixed(1)}%`; });
 }
-
-function initDashboard() {
-  console.log("init dashboard");
-  __parse_data();
-  initLineChart();
-}
+// Only minimal code for line chart, pie chart, and interactive filters remains.

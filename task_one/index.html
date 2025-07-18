@@ -14,114 +14,50 @@
 <head>
     <meta charset="UTF-8">
     <title>Data Visualization Exercise</title>
-
-    <link rel="stylesheet" href="http://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
-    <link rel="stylesheet" type="text/css" href="style.css">
-    <!-- include loadDash -->
-    <script src="
-https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js
-"></script>
-    <!-- include d3 -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
-
-    <!-- include jQueryUI -->
-    <script src="https://code.jquery.com/jquery-3.6.1.js"></script>
-    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
-
-    <!-- PART 1: include dataVis script -->
-    <script src="dataVis.js"></script>
-    <!-- PART 2: include scripts for the dashboard -->
     <script src="dashboard.js"></script>
-
+    <style>
+        #filters {
+            width: 600px;
+            margin: 20px auto;
+            text-align: left;
+        }
+    
+        #lineChart {
+            width: 600px;
+            height: 400px;
+            margin: 40px auto;
+        }
+    
+        #countryFilter {
+            width: 600px;
+            margin: 20px auto;
+            text-align: left;
+        }
+    
+        #pieChart {
+            width: 400px;
+            height: 400px;
+            margin: 40px auto;
+        }
+    
+        #pieTooltip {
+            position: absolute;
+            background: #fff;
+            border: 1px solid #ccc;
+            padding: 8px;
+            display: none;
+            pointer-events: none;
+            z-index: 10;
+        }
+    </style>
 </head>
-
-<!-- call init function when page has loaded -->
 <body onload="init()">
-
-<h1>Data Visualization Exercise</h1>
-
-<!-- credits -->
-<div id="credits">
-    Created by <span class="instructions">Hajar Bilal, Muhammad Sharafeldin</span>
-    for the Data Visualization Lecture at <a href="https://www.fim.uni-passau.de/digitale-bildverarbeitung"> Faculty of Computer
-    Science and Mathematics - Chair of Cognitive sensor systems - University of Passau</a>.
-</div>
-
-<!-- create buttons to select tabs -->
-<button class="tablink" onclick="openPage('DataLoading', this, 'blue')">Data Loading</button>
-<button class="tablink" onclick="openPage('BasicVisualization', this, 'blue')">Basic Visualization</button>
-<button class="tablink" onclick="openPage('Dashboard', this, 'blue')" id="defaultOpen">Dashboard</button>
-
-<!-- Tab 1 -->
-<div id="DataLoading" class="tabcontent">
-
-    <!-- data selector -->
-    <p>Select your data here: <input id="upload" type="file"></p>
-
-    <!-- data table -->
-    <div id="dataTable"></div>
-
-</div>
-
-<!-- Tab 2 -->
-<div id="BasicVisualization" class="tabcontent">
-
-    <!-- scatterplot -->
-    <div class="container">
-        <!-- scatterplot menu -->
-        <h2>Scatterplot</h2>
-
-        <p>Select dimensions to be displayed here: </p>
-        <div id="menu">
-            <form action="#">
-                <fieldset>
-                    <label for="scatterX">x axis: </label>
-                    <select name="scatterX" id="scatterX">
-                    </select>
-                    <br/>
-                    <label for="scatterY">y axis: </label>
-                    <select name="scatterY" id="scatterY">
-                    </select>
-                    <br/>
-                    <label for="size">size: </label>
-                    <select name="size" id="size">
-                    </select>
-                </fieldset>
-            </form>
-        </div>
-        <!-- scatterplot SVG -->
-        <div id="sp"></div>
-    </div>
-
-    <!-- radar chart -->
-    <div class="container">
-        <h2>Radar Chart</h2>
-        <!-- radar chart SVG -->
-        <div id="radar"></div>
-        <div id="legend">
-            <b>Legend:</b><br/>
-            <svg id="legend_content" height=135 width=600></svg>
-        </div>
-    </div>
-
-</div>
-
-<!-- Tab 3 -->
-<div id="Dashboard" class="tabcontent dashboardContainer">
-    <div class="header">
-        <h1>What Is Killing Our Children?</h1>
-    </div>
-    <div class="dashboardBody">
-        <div id="lineChart"></div>
-
-    </div>
-    <!-- TODO: The environment of your dashboard can be freely customized. Here is a general layout to get you started. -->
-
-
-
-</div>
-</div>
-
-
+<h1>Line Chart: Total Deaths by Year and Cause</h1>
+<div id="filters"></div>
+<div id="lineChart"></div>
+<h2>Pie Chart: Causes of Death as Percentage</h2>
+<div id="pieChart"></div>
+<div id="pieTooltip"></div>
 </body>
 </html>

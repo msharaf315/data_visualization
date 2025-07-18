@@ -1,4 +1,11 @@
 /*
+ * Minimal dataVis.js for line chart only
+ * All other code commented out
+ */
+
+// Only dashboard.js will handle the line chart and API fetch. No code needed here for minimal setup.
+
+/*
  * Data Visualization - Framework
  * Copyright (C) University of Passau
  *   Faculty of Computer Science and Mathematics
@@ -10,7 +17,7 @@
  */
 
 // Radius scales
-let r_scales =[]
+let r_scales = [];
 let line = d3
   .line()
   .x((d) => d.x)
@@ -50,7 +57,7 @@ let selected_points = {
 
 function init() {
   initDashboard();
-  
+
   // define size of plots
   margin = { top: 20, right: 20, bottom: 20, left: 50 };
   width = 600;
