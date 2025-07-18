@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<!--
+* Data Visualization - Framework
+* Copyright (C) University of Passau
+*   Faculty of Computer Science and Mathematics
+*   Chair of Cognitive sensor systems
+* Maintenance:
+*   2025, Alexander Gall <alexander.gall@uni-passau.de>
+*
+* All rights reserved.
+-->
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Data Visualization Exercise</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="dashboard.js"></script>
+    <style>
+      #filters { width: 600px; margin: 20px auto; text-align: left; }
+      #lineChart { width: 600px; height: 400px; margin: 40px auto; }
+      #countryFilter { width: 600px; margin: 20px auto; text-align: left; }
+      #pieChart { width: 400px; height: 400px; margin: 40px auto; }
+      #pieTooltip { position: absolute; background: #fff; border: 1px solid #ccc; padding: 8px; display: none; pointer-events: none; z-index: 10; }
+    </style>
+</head>
+<body onload="init()">
+  <h1>Line Chart: Total Deaths by Year and Cause</h1>
+  <div id="filters"></div>
+  <div id="lineChart"></div>
+  <h2>Pie Chart: Causes of Death as Percentage</h2>
+  <div id="pieChart"></div>
+  <div id="pieTooltip"></div>
+</body>
+</html>

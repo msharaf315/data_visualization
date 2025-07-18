@@ -2,5 +2,3 @@
 .vscode/
 data/
 # *.csv
-
-*.pyc

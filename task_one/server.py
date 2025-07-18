@@ -12,31 +12,22 @@ df.columns
 
 # %%
 def _get_line_chart_data(df):
-
-    grouped_df = df.groupby(['year', 'Cause'], as_index=False).sum()
+    # Group by year, country, and Cause
+    grouped_df = df.groupby(['year', 'country', 'Cause'], as_index=False).sum()
     grouped_df["total_death"] = grouped_df[death_count_columns].sum(axis=1)
-    grouped_df[death_count_columns]
     grouped_df = grouped_df.drop(death_count_columns, axis='columns')
-    grouped_df = grouped_df.drop(["country"], axis="columns")
-
     return grouped_df
 
-def _filter_df(df, sex, country, year, cause):
+def _filter_df(df, country):
     if country:
         df = df[df['country'] == country]
-    if sex:
-        df = df[df['sex'] == sex]
-    if cause:
-        df = df[df['Cause'] == cause]
-    if year:
-        df = df[df['year'] == year]
-
     return df 
 
-def get_data(df, sex=None, country=None, year=None, cause=None):
-    df = _filter_df(df, sex, country, year, cause)
+def get_data(df, country=None):
+    df = _filter_df(df, country)
     line_chart_data = _get_line_chart_data(df)
-    response = {"line_chart_data": line_chart_data}
+   
+    response = {"line_chart_data": line_chart_data.to_dict(orient="records")}
     print(response)
     return response
 get_data(df)
@@ -45,15 +36,37 @@ get_data(df)
 from typing import Union
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Or specify ["http://127.0.0.1:5500"]
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/")
 def read_root(
-    sex: Union[str, None] = None,
     country: Union[str, None] = None,
-    year: Union[str, None] = None,
-    cause: Union[str, None] = None,
 ):
-    return get_data(df, sex, country, year, cause)
+    """Root endpoint to get data based on country filter only."""
+    return get_data(df, country)
+
+def get_pie_chart_data(df, country=None):
+    if country:
+        df = df[df['country'] == country]
+    grouped = df.groupby('Cause', as_index=False)[death_count_columns].sum()
+    grouped['total_death'] = grouped[death_count_columns].sum(axis=1)
+    total = grouped['total_death'].sum()
+    grouped['percentage'] = grouped['total_death'] / total * 100
+    return grouped[['Cause', 'total_death', 'percentage']].to_dict(orient='records')
+
+@app.get("/pie")
+def pie_chart_endpoint(
+    country: Union[str, None] = None,
+):
+    return {"pie_chart_data": get_pie_chart_data(df, country)}
