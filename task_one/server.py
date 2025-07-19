@@ -36,9 +36,44 @@ def _get_map_chart_data(df):
     pass
 
 
+# %%
 def _get_pictorial_chart_data(df):
-    pass
+    result_df = pd.DataFrame(columns=["cause", "percent", "icon_count", "category"])
+    df = df.groupby("Cause", as_index=False)[death_count_columns].sum()
+    df = df[df["Cause"] != "Other"]
+    df = df[df["Cause"] != "All causes"]
+    for death_count_column in death_count_columns:
+        df[death_count_column + "_percent"] = (
+            df[death_count_column] / df[death_count_column].sum() * 100
+        ).round(2)
+        df[death_count_column + "icon_count"] = (
+            df[death_count_column + "_percent"] / 100
+        ).round(1) * 10
+        temp_df = (
+            df[
+                [
+                    "Cause",
+                    death_count_column + "_percent",
+                    death_count_column + "icon_count",
+                ]
+            ]
+            .sort_values(by=death_count_column + "_percent", ascending=False)
+            .head(10)
+        )
+        temp_df["category"] = death_count_column
+        temp_df = temp_df.rename(
+            columns={
+                "Cause": "cause",
+                death_count_column + "_percent": "percent",
+                death_count_column + "icon_count": "icon_count",
+            }
+        )
+        result_df = pd.concat([result_df, temp_df])
+    return result_df.to_dict(orient="records")
 
+
+# TODO remove
+_get_pictorial_chart_data(df)
 
 def _filter_df(
     df,
@@ -99,3 +134,10 @@ def read_root(
 ):
     # print(get_data(df, sex, country, year, cause))
     return get_data(df, sex, country, year, cause)
+
+# %%
+# TODO remove
+x = _get_pictorial_chart_data(df)
+
+
+# %%
