@@ -37,6 +37,25 @@ def _get_map_chart_data(df):
 
 
 # %%
+def _get_cat_name_from_column_name(col_name):
+    if col_name == "death_range_0_year":
+        return "Less than a year old"
+    elif col_name == "death_range_1_year":
+        return "One year old"
+    elif col_name == "death_range_2_year":
+        return "Two years old"
+    elif col_name == "death_range_3_year":
+        return "Three years old"
+    elif col_name == "death_range_4_year":
+        return "Four years old"
+    elif col_name == "death_range_5_9":
+        return "Between 5 and 9 years old"
+    elif col_name == "death_range_10_14":
+        return "Between 10 and 14 years old"
+    elif col_name == "death_range_15_19":
+        return "Between 15 and 19 years old"
+
+
 def _get_pictorial_chart_data(df):
     result_df = pd.DataFrame(columns=["cause", "percent", "icon_count", "category"])
     df = df.groupby("Cause", as_index=False)[death_count_columns].sum()
@@ -60,7 +79,7 @@ def _get_pictorial_chart_data(df):
             .sort_values(by=death_count_column + "_percent", ascending=False)
             .head(10)
         )
-        temp_df["category"] = death_count_column
+        temp_df["category"] = _get_cat_name_from_column_name(death_count_column)
         temp_df = temp_df.rename(
             columns={
                 "Cause": "cause",
