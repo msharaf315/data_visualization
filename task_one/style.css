@@ -280,20 +280,13 @@ margin-left: 1%;
       box-shadow: 0px 2px 6px rgba(0,0,0,0.2);
     }
 
-.grid-container {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr); /* 2 columns */
-  gap: 16px; /* space between divs */
-  margin: auto;
+.two-chart-row {
+    display: flex; /* Use flexbox for easy horizontal alignment */
+    justify-content: space-between; /* Distribute space between items */
+    align-items: flex-end; /* Align items to the start of the cross-axis */
+    width: 100%; /* Ensure the row takes full width of its parent */
+    gap: 20px; /* Add some space between the charts (optional) */
 }
-
-.grid-item {
-  background-color: lightgreen;
-  padding: 20px;
-  text-align: center;
-  border-radius: 8px;
-}
-
 #barChart svg {
   font-family: Arial, sans-serif;
 }
