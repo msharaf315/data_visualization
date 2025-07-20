@@ -22,6 +22,9 @@ let selectedYear = null;
 let selectedCause = null;
 let selectedSex = null;
 
+let selectedYearFrom = null;
+let selectedYearTo = null;
+
 async function createFilters() {
   console.log("Creating filters with predefined options...");
   
@@ -157,14 +160,18 @@ async function createFilters() {
     selectedYear = null;
     selectedCause = null;
     selectedSex = null;
+    selectedYearFrom = null;
+    selectedYearTo = null;
     // Reset all dropdowns
     const countrySelect = document.getElementById("countrySelect");
-    const yearSelect = document.getElementById("yearSelect");
+    const yearFromSelect = document.getElementById("yearFromSelect");
+    const yearToSelect = document.getElementById("yearToSelect");
     const causeSelect = document.getElementById("causeSelect");
     const sexSelect = document.getElementById("sexSelect");
     
     if (countrySelect) countrySelect.value = "";
-    if (yearSelect) yearSelect.value = "";
+    if (yearFromSelect) yearFromSelect.value = "";
+    if (yearToSelect) yearToSelect.value = "";
     if (causeSelect) causeSelect.value = "";
     if (sexSelect) sexSelect.value = "";
     
@@ -180,12 +187,8 @@ async function createFilters() {
     })
   );
   
-  container.appendChild(
-    createDropdown("yearSelect", ["", ...filterOptions.years], "Year", async (val) => {
-      selectedYear = val || null;
-      await updateCharts();
-    })
-  );
+  // Add year range dropdown and sorted
+  container.appendChild(createYearRange(filterOptions.years.sort()));
   
   container.appendChild(
     createDropdown("causeSelect", ["", ...filterOptions.causes], "Cause", async (val) => {
@@ -221,6 +224,71 @@ function createDropdown(id, options, label, onChange) {
     onChange(this.value);
   };
   wrapper.appendChild(select);
+  return wrapper;
+}
+
+function createYearRange(years) {
+  const wrapper = document.createElement("span");
+  wrapper.style.marginRight = "20px";
+  
+  //Label
+  const lbl = document.createElement("label");
+  lbl.innerText = "Year Range: ";
+  wrapper.appendChild(lbl);
+  
+  // From dropdown
+  const fromSelect = document.createElement("select");
+  fromSelect.id = "yearFromSelect";
+  fromSelect.style.marginRight = "5px";
+  
+  //Add empty option first
+  const emptyFrom = document.createElement("option");
+  emptyFrom.value = "";
+  emptyFrom.text = "From";
+  fromSelect.appendChild(emptyFrom);
+  
+  // Add year options
+  years.forEach((year) => {
+    const opt = document.createElement("option");
+    opt.value = year;
+    opt.text = year;
+    fromSelect.appendChild(opt);
+  });
+  
+  //To dropdown
+  const toSelect = document.createElement("select");
+  toSelect.id = "yearToSelect";
+  toSelect.style.marginLeft = "5px";
+  
+  // Add empty option first
+  const emptyTo = document.createElement("option");
+  emptyTo.value = "";
+  emptyTo.text = "To";
+  toSelect.appendChild(emptyTo);
+  
+  // Add year options
+  years.forEach((year) => {
+    const opt = document.createElement("option");
+    opt.value = year;
+    opt.text = year;
+    toSelect.appendChild(opt);
+  });
+  
+  // Event handlers
+  fromSelect.onchange = async function () {
+    selectedYearFrom = this.value || null;
+    await updateCharts();
+  };
+  
+  toSelect.onchange = async function () {
+    selectedYearTo = this.value || null;
+    await updateCharts();
+  };
+  
+  wrapper.appendChild(fromSelect);
+  wrapper.appendChild(document.createTextNode(" - "));
+  wrapper.appendChild(toSelect);
+  
   return wrapper;
 }
 
@@ -411,6 +479,8 @@ async function getData() {
   const params = new URLSearchParams();
   if (selectedCountry) params.append('country', selectedCountry);
   if (selectedYear) params.append('year', selectedYear);
+  if (selectedYearFrom) params.append('year_from', selectedYearFrom);
+  if (selectedYearTo) params.append('year_to', selectedYearTo);
   if (selectedCause) params.append('cause', selectedCause);
   if (selectedSex) params.append('sex', selectedSex);
   

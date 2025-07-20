@@ -46,27 +46,44 @@ def _filter_df(
     year,
     cause,
     sex,
+    year_from=None,
+    year_to=None,
 ):
+    
 
     if country:
         df = df[df["country"] == country]
+        
 
     if sex:
-        # Convert sex to int
+        
         sex_value = int(sex)
-        print(sex_value)
         df = df[df["sex"] == sex_value]
-
+        
     if year:
         df = df[df["year"] == int(year)]
+        
+    
+    # year range (if single year is not specified)
+    elif year_from and year_to:
+        year_from_int = int(year_from)
+        year_to_int = int(year_to)
+        df = df[(df["year"] >= year_from_int) & (df["year"] <= year_to_int)]
+    elif year_from:
+        year_from_int = int(year_from)
+        df = df[df["year"] >= year_from_int]
+    elif year_to:
+        year_to_int = int(year_to)
+        df = df[df["year"] <= year_to_int]
+        
     if cause:
         df = df[df["Cause"] == cause]
 
     return df 
 
 
-def get_data(df, country=None, sex=None, year=None, cause=None):
-    df = _filter_df(df, country, year, cause, sex)
+def get_data(df, country=None, sex=None, year=None, cause=None, year_from=None, year_to=None):
+    df = _filter_df(df, country, year, cause, sex, year_from, year_to)
     line_chart_data = _get_line_chart_data(df)
     pie_chart_data = _get_pie_chart_data(df)
     map_chart_data = _get_map_chart_data(df)
@@ -103,8 +120,8 @@ def read_root(
     year: Union[str, None] = None,
     cause: Union[str, None] = None,
     sex: Union[str, None] = None,
+    year_from: Union[str, None] = None,
+    year_to: Union[str, None] = None,
 ):
-
-    result = get_data(df, country, sex, year, cause)
-
+    result = get_data(df, country, sex, year, cause, year_from, year_to)
     return result
