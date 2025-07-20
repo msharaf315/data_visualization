@@ -47,14 +47,28 @@ def _filter_df(
     cause,
     sex,
 ):
+    print(f"Filtering with: country={country}, year={year}, cause={cause}, sex={sex}")
+    print(f"DataFrame shape before filtering: {df.shape}")
+    
     if country:
         df = df[df["country"] == country]
+        print(f"After country filter: {df.shape}")
     if sex:
-        df = df[df["country"] == sex]
+        # Convert sex to int 
+        try:
+            sex_value = int(sex)
+            df = df[df["sex"] == sex_value]
+            print(f"After sex filter (sex={sex_value}): {df.shape}")
+        except (ValueError, TypeError):
+            print(f"Could not convert sex '{sex}' to int")
     if year:
-        df = df[df["year"] == year]
+        df = df[df["year"] == int(year)]
+        print(f"After year filter: {df.shape}")
     if cause:
         df = df[df["Cause"] == cause]
+        print(f"After cause filter: {df.shape}")
+    
+    print(f"Final DataFrame shape: {df.shape}")
     return df 
 
 
@@ -97,5 +111,10 @@ def read_root(
     cause: Union[str, None] = None,
     sex: Union[str, None] = None,
 ):
-    # print(get_data(df, sex, country, year, cause))
-    return get_data(df, sex, country, year, cause)
+    print(f"Received parameters: country={country}, year={year}, cause={cause}, sex={sex}")
+    result = get_data(df, country, sex, year, cause)
+    print(f"Returning data with line_chart_data length: {len(result['line_chart_data'])}")
+    print(f"Returning data with pie_chart_data length: {len(result['pie_chart_data'])}")
+    return result
+
+

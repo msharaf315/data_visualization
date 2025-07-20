@@ -35,6 +35,40 @@ body {
   background-color: #777;
 }
 
+/* Filter styles */
+#filters {
+  margin: 20px 0;
+  padding: 15px;
+  background-color: #f5f5f5;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+}
+
+#filters label {
+  margin-right: 5px;
+  font-weight: bold;
+  color: black;
+}
+
+#filters select {
+  margin-right: 15px;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+}
+
+#filters button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+#filters button:hover {
+  background-color: #0056b3;
+}
+
 /* Style the tab content (and add height:100% for full page content) */
 .tabcontent {
   color: black;
