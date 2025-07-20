@@ -320,7 +320,7 @@ function initPictorialChart(data) {
       const translateX = xScale(d.x_location); // Position based on x_location, centered
       const translateY = yScale(d.category); // Position based on x_location, centered
 
-      return `translate(${translateX}, ${translateY}) scale(0.1)`;
+      return `translate(${translateX - 12}, ${translateY}) scale(0.1)`;
     })
 
     .attr("fill", (d) => {
