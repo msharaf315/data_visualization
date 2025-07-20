@@ -36,6 +36,8 @@ let selectedSex = null;
 let selectedYearFrom = null;
 let selectedYearTo = null;
 
+pictorial_colors = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728"];
+
 async function createFilters() {
   // predefined filter options directly
   const filterOptions = {
@@ -484,7 +486,6 @@ async function updateCharts() {
   d3.select("#pictorialChart").selectAll("*").remove();
 
   data = await getData();
-  console.log("fetched data: ", data);
 
   initLineChart(data["line_chart_data"]);
   drawPieChart(data["pie_chart_data"]);
@@ -563,8 +564,6 @@ function initLineChart(data) {
     })
     .attr("fill", "#ff7f0c")
     .on("mouseover", function (event, d) {
-      console.log(d);
-
       div.transition().duration(200).style("opacity", 1);
       div
         .html(
@@ -661,13 +660,57 @@ function drawPieChart(data) {
     });
 }
 
+function render_pictorial_legend(data, colorScale) {
+  // create a list of keys
+  var Svg = d3.select("#pictorial-legend-content");
+  Svg.selectAll("*").remove();
+
+  added_causes = [];
+  filtered_data = [];
+  data.map((d) => {
+    if (!added_causes.includes(d.cause)) {
+      added_causes.push(d.cause);
+      filtered_data.push(d);
+    }
+  });
+  // Add one dot in the legend for each name.
+  Svg.selectAll("pictorial_dots")
+    .data(filtered_data)
+    .enter()
+    .append("circle")
+    .attr("cx", 100) // X position of the dots
+    .attr("cy", function (d, i) {
+      return 20 + i * 25; // Y position, spaced out by 25px
+    })
+    .attr("r", 7) // Radius of the dots
+    .attr("fill", (d) => {
+      return colorScale(d.cause); // Fill color based on the cause
+    })
+    .attr("opacity", "0.8");
+
+  // Add one label in the legend for each name.
+  Svg.selectAll("pictorial_labels")
+    .data(filtered_data)
+    .enter()
+    .append("text")
+    .attr("x", 120) // X position of the labels (offset from dots)
+    .attr("y", function (d, i) {
+      // This is the key change: use the same spacing logic as for the circles
+      return 20 + i * 25;
+    })
+    .style("fill", "black") // Text color
+    .text(function (d) {
+      return d.cause; // Text content from the 'cause' property
+    })
+    .attr("text-anchor", "left") // Align text to the left
+    .style("alignment-baseline", "middle");
+}
+
 function initPictorialChart(data) {
   // define color scheme for causes
+
   const causes = [...new Set(data.map((d) => d.cause))];
-  const colorScale = d3
-    .scaleOrdinal()
-    .domain(causes)
-    .range(["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728"]);
+  const colorScale = d3.scaleOrdinal().domain(causes).range(pictorial_colors);
   const margin = { top: 10, right: 30, bottom: 30, left: 70 },
     width = 700 - margin.left - margin.right,
     height = 400 - margin.top - margin.bottom;
@@ -745,21 +788,21 @@ function initPictorialChart(data) {
     .attr("fill", (d) => {
       return colorScale(d.cause);
     });
+  render_pictorial_legend(data, colorScale);
 }
 
 async function getData() {
   // Build query parameters for filters
   const params = new URLSearchParams();
-  if (selectedCountry) params.append('country', selectedCountry);
-  if (selectedYear) params.append('year', selectedYear);
-  if (selectedYearFrom) params.append('year_from', selectedYearFrom);
-  if (selectedYearTo) params.append('year_to', selectedYearTo);
-  if (selectedCause) params.append('cause', selectedCause);
-  if (selectedSex) params.append('sex', selectedSex);
-  
+  if (selectedCountry) params.append("country", selectedCountry);
+  if (selectedYear) params.append("year", selectedYear);
+  if (selectedYearFrom) params.append("year_from", selectedYearFrom);
+  if (selectedYearTo) params.append("year_to", selectedYearTo);
+  if (selectedCause) params.append("cause", selectedCause);
+  if (selectedSex) params.append("sex", selectedSex);
+
   const url = `http://127.0.0.1:8000/?${params.toString()}`;
-  console.log("Fetching data with URL:", url);
-  
+
   return await fetch(url)
     .then((response) => {
       return response.json(); // parse JSON data
