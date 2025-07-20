@@ -34,7 +34,13 @@ def _get_pie_chart_data(df):
 def _get_map_chart_data(df):
     pass
 
-
+def _get_bar_chart_data(df, group_by="Cause"):
+    """
+   group by cause and calculate the total deaths for each cause.
+    """
+    grouped = df.groupby(group_by, as_index=False)[death_count_columns].sum()
+    grouped["value"] = grouped[death_count_columns].sum(axis=1)
+    return grouped[[group_by, "value"]].rename(columns={group_by: "label"}).to_dict(orient="records")
 # %%
 def _get_cat_name_from_column_name(col_name):
     if col_name == "death_range_0_year":
@@ -159,12 +165,14 @@ def get_data(df, country=None, sex=None, year=None, cause=None, year_from=None, 
     pie_chart_data = _get_pie_chart_data(df)
     map_chart_data = _get_map_chart_data(df)
     pictorial_chart_data = _get_pictorial_chart_data(df)
+    bar_chart_data = _get_bar_chart_data(df)
 
     return {
         "line_chart_data": line_chart_data,
         "map_chart_data": map_chart_data,
         "pie_chart_data": pie_chart_data,
         "pictorial_chart_data": pictorial_chart_data,
+        "bar_chart_data": bar_chart_data,
     }
 
 
@@ -173,15 +181,15 @@ from typing import Union
 
 from fastapi import FastAPI
 origins = [
-    "http://127.0.0.1:5500",
+    "http://127.0.0.1:5501",
 ]
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,  # List of allowed origins
+    allow_origins=["*"],  
     allow_credentials=True,
-    allow_methods=["*"],  # Allow all HTTP methods (GET, POST, etc.)
-    allow_headers=["*"],  # Allow all headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 

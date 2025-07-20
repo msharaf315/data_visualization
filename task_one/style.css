@@ -293,3 +293,10 @@ margin-left: 1%;
   text-align: center;
   border-radius: 8px;
 }
+
+#barChart svg {
+  font-family: Arial, sans-serif;
+}
+#barChart .tick text {
+  font-size: 12px;
+}

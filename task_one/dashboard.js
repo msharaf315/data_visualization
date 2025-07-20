@@ -482,6 +482,7 @@ async function updateCharts() {
   d3.select("#lineChart").selectAll("*").remove();
   d3.select("#pieChart").selectAll("*").remove();
   d3.select("#pictorialChart").selectAll("*").remove();
+  d3.select("#barChart").selectAll("*").remove();
 
   data = await getData();
   console.log("fetched data: ", data);
@@ -489,6 +490,9 @@ async function updateCharts() {
   initLineChart(data["line_chart_data"]);
   drawPieChart(data["pie_chart_data"]);
   initPictorialChart(data["pictorial_chart_data"]);
+  if (data["bar_chart_data"] && data["bar_chart_data"].length > 0) {
+    drawBarChart(data["bar_chart_data"]);
+  }
 }
 
 function initLineChart(data) {
@@ -745,6 +749,63 @@ function initPictorialChart(data) {
     .attr("fill", (d) => {
       return colorScale(d.cause);
     });
+}
+
+function drawBarChart(data) {
+  
+  d3.select("#barChart").selectAll("*").remove();
+
+  // keep top 10
+  const topData = data
+    .slice() // copie pour ne pas modifier l'original
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 10);
+
+  const margin = { top: 30, right: 30, bottom: 30, left: 200 },
+    width = 600 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
+
+  const svg = d3
+    .select("#barChart")
+    .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
+
+  // Axe Y (labels)
+  const y = d3
+    .scaleBand()
+    .domain(topData.map((d) => d.label))
+    .range([0, height])
+    .padding(0.2);
+
+  svg
+    .append("g")
+    .call(d3.axisLeft(y));
+
+  // Axe X (valeurs)
+  const x = d3
+    .scaleLinear()
+    .domain([0, d3.max(topData, (d) => d.value)])
+    .range([0, width]);
+
+  svg
+    .append("g")
+    .attr("transform", `translate(0,${height})`)
+    .call(d3.axisBottom(x));
+
+  // Barres horizontales
+  svg
+    .selectAll("rect")
+    .data(topData)
+    .enter()
+    .append("rect")
+    .attr("y", (d) => y(d.label))
+    .attr("x", 0)
+    .attr("height", y.bandwidth())
+    .attr("width", (d) => x(d.value))
+    .attr("fill", "#69b3a2");
 }
 
 async function getData() {
