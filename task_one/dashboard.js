@@ -36,7 +36,14 @@ let selectedSex = null;
 let selectedYearFrom = null;
 let selectedYearTo = null;
 
-pictorial_colors = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728"];
+const startColor = "#FF0000"; // Red
+const endColor = "#000000"; // Black
+// Create a color interpolator from red to black
+const interpolateColor = d3.interpolateRgb(startColor, endColor);
+const pictorial_colors = Array.from({ length: 20 }, (_, i) =>
+  interpolateColor(i / (20 - 1))
+);
+// pictorial_colors = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728"];
 
 async function createFilters() {
   // predefined filter options directly
@@ -554,6 +561,25 @@ function initLineChart(data) {
     .style("opacity", 0);
 
   // svg.selectAll("dot")
+
+  // Add the line
+  lineChart
+    .append("path")
+    .datum(data)
+    .attr("fill", "none")
+    .attr("stroke", "black")
+    .attr("stroke-width", 1.5)
+    .attr(
+      "d",
+      d3
+        .line()
+        .x(function (d) {
+          return x(d.date);
+        })
+        .y(function (d) {
+          return y(d.total_death);
+        })
+    );
   lineChart
     .selectAll("dot")
     .data(data)
@@ -566,7 +592,7 @@ function initLineChart(data) {
     .attr("cy", function (d) {
       return y(d.total_death);
     })
-    .attr("fill", "#ff7f0c")
+    .attr("fill", "red")
     .on("mouseover", function (event, d) {
       div.transition().duration(200).style("opacity", 1);
       div
@@ -583,25 +609,6 @@ function initLineChart(data) {
     .on("mouseout", function (d) {
       div.transition().duration(500).style("opacity", 0);
     });
-
-  // Add the line
-  lineChart
-    .append("path")
-    .datum(data)
-    .attr("fill", "none")
-    .attr("stroke", "steelblue")
-    .attr("stroke-width", 1.5)
-    .attr(
-      "d",
-      d3
-        .line()
-        .x(function (d) {
-          return x(d.date);
-        })
-        .y(function (d) {
-          return y(d.total_death);
-        })
-    );
 }
 
 function drawPieChart(data) {
@@ -688,7 +695,10 @@ function render_pictorial_legend(data, colorScale) {
     })
     .attr("r", 7) // Radius of the dots
     .attr("fill", (d) => {
-      return colorScale(d.cause); // Fill color based on the cause
+      if (d.cause == "Other") {
+        return "black";
+      }
+      return colorScale(d.cause);
     })
     .attr("opacity", "0.8");
 
@@ -790,6 +800,9 @@ function initPictorialChart(data) {
     })
 
     .attr("fill", (d) => {
+      if (d.cause == "Other") {
+        return "black";
+      }
       return colorScale(d.cause);
     });
   render_pictorial_legend(data, colorScale);
