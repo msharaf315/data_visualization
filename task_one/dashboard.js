@@ -599,7 +599,7 @@ function initLineChart(data) {
       div.transition().duration(200).style("opacity", 1);
       div
         .html(
-          "year: " +
+          "Year: " +
             formatTime(d.date) +
             "<br/>" +
             "Death count:" +
@@ -691,7 +691,7 @@ function render_pictorial_legend(data, colorScale) {
     .data(filtered_data)
     .enter()
     .append("circle")
-    .attr("cx", 100) // X position of the dots
+    .attr("cx", 7 + 10) // X position of the dots
     .attr("cy", function (d, i) {
       return 20 + i * 25; // Y position, spaced out by 25px
     })
@@ -709,7 +709,7 @@ function render_pictorial_legend(data, colorScale) {
     .data(filtered_data)
     .enter()
     .append("text")
-    .attr("x", 120) // X position of the labels (offset from dots)
+    .attr("x", 20 + 10) // X position of the labels (offset from dots)
     .attr("y", function (d, i) {
       // This is the key change: use the same spacing logic as for the circles
       return 20 + i * 25;
@@ -811,7 +811,6 @@ function initPictorialChart(data) {
 }
 
 function drawBarChart(data) {
-  
   d3.select("#barChart").selectAll("*").remove();
 
   // keep top 10
@@ -876,6 +875,14 @@ function drawBarChart(data) {
     .attr("transform", `translate(${margin.left},${height})`)
     .call(d3.axisBottom(x));
 
+  // Tool tip
+  // Tool tip
+  var div = d3
+    .select("#bar-chart-container")
+    .append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
+
   // Barres horizontales
   svg
     .selectAll("rect")
@@ -887,7 +894,23 @@ function drawBarChart(data) {
     .attr("height", y.bandwidth())
     .attr("width", (d) => x(d.value))
     .attr("fill", "#000000")
-    .attr("transform", `translate( ${margin.left},` + "0)");
+    .attr("transform", `translate( ${margin.left},` + "0)")
+    .on("mouseover", function (event, d) {
+      div.transition().duration(200).style("opacity", 1);
+      div
+        .html(
+          "Cause: " +
+            d.label +
+            "<br/>" +
+            "Death count:" +
+            d.value.toLocaleString()
+        )
+        .style("left", event.pageX + "px")
+        .style("top", event.pageY - 28 + "px");
+    })
+    .on("mouseout", function (d) {
+      div.transition().duration(500).style("opacity", 0);
+    });
 }
 
 async function getData() {
