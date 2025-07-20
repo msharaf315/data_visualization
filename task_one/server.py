@@ -11,9 +11,9 @@ death_count_columns= ['death_range_0_year', 'death_range_1_year',
        'death_range_5_9', 'death_range_10_14', 'death_range_15_19']
 df.dtypes
 
+
 # %%
 def _get_line_chart_data(df):
-
     grouped_df = df.groupby(["year"], as_index=False).sum()
     grouped_df["total_death"] = grouped_df[death_count_columns].sum(axis=1)
     grouped_df = grouped_df.drop(death_count_columns, axis='columns')
@@ -38,6 +38,8 @@ def _get_bar_chart_data(df, group_by="Cause"):
     """
    group by cause and calculate the total deaths for each cause.
     """
+    df = df[df["Cause"] != "Other"]
+    df = df[df["Cause"] != "All causes"]
     grouped = df.groupby(group_by, as_index=False)[death_count_columns].sum()
     grouped["value"] = grouped[death_count_columns].sum(axis=1)
     return grouped[[group_by, "value"]].rename(columns={group_by: "label"}).to_dict(orient="records")

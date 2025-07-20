@@ -820,9 +820,9 @@ function drawBarChart(data) {
     .sort((a, b) => b.value - a.value)
     .slice(0, 10);
 
-  const margin = { top: 30, right: 30, bottom: 30, left: 200 },
-    width = 600 - margin.left - margin.right,
-    height = 500 - margin.top - margin.bottom;
+  const margin = { top: 10, right: 30, bottom: 30, left: 100 },
+    width = 900 - margin.left - margin.right,
+    height = 400 - margin.top - margin.bottom;
 
   const svg = d3
     .select("#barChart")
@@ -839,19 +839,41 @@ function drawBarChart(data) {
     .range([0, height])
     .padding(0.2);
 
-  svg
+  const yAxis = svg
     .append("g")
+    .attr("transform", `translate( ${margin.left},` + "0)")
     .call(d3.axisLeft(y));
+
+  // Select all y-axis ticks and apply the wrapping/truncation logic
+  yAxis.selectAll(".tick text").each(function (d) {
+    const text = d3.select(this);
+    const label = d; // 'd' here is the actual label text from your domain
+    const maxWidth = margin.left - 10; // Adjust this value as needed, leaving some padding
+    const charLimit = 30; // Approximate character limit before truncating, adjust as needed
+
+    // Check if the text width exceeds the maxWidth (you might need to render and measure for accuracy)
+    // For simplicity, we'll use a character limit here. For precise wrapping/truncation,
+    // you'd typically need to get the computed text length after rendering.
+
+    if (label.length > charLimit) {
+      text.text(label.substring(0, charLimit) + "...");
+    } else {
+      // You could implement more sophisticated wrapping here if needed,
+      // for example, by breaking the text into multiple <tspan> elements.
+      // For now, if it's within limits, just set the text.
+      text.text(label);
+    }
+  });
 
   // Axe X (valeurs)
   const x = d3
     .scaleLinear()
     .domain([0, d3.max(topData, (d) => d.value)])
-    .range([0, width]);
+    .range([0, width - margin.left - margin.right]);
 
   svg
     .append("g")
-    .attr("transform", `translate(0,${height})`)
+    .attr("transform", `translate(${margin.left},${height})`)
     .call(d3.axisBottom(x));
 
   // Barres horizontales
@@ -864,7 +886,8 @@ function drawBarChart(data) {
     .attr("x", 0)
     .attr("height", y.bandwidth())
     .attr("width", (d) => x(d.value))
-    .attr("fill", "#69b3a2");
+    .attr("fill", "#000000")
+    .attr("transform", `translate( ${margin.left},` + "0)");
 }
 
 async function getData() {
