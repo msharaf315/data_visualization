@@ -20,7 +20,6 @@ def _get_line_chart_data(df):
     grouped_df = grouped_df.drop(["country", "Cause", "sex"], axis="columns")
     grouped_df["total_death"] = pd.Series(grouped_df["total_death"], dtype="Int64")
     grouped_df["year"] = pd.Series(grouped_df["year"], dtype="Int64")
-    print(grouped_df.dtypes)
     return grouped_df.to_dict(orient="records")
 
 
@@ -55,9 +54,11 @@ def _get_cat_name_from_column_name(col_name):
     elif col_name == "death_range_15_19":
         return "Between 15 and 19 years old"
 
-
+# %%
 def _get_pictorial_chart_data(df):
-    result_df = pd.DataFrame(columns=["cause", "percent", "icon_count", "category"])
+    result_df = pd.DataFrame(
+        columns=["cause", "percent", "icon_count", "category", "x_location"]
+    )
     df = df.groupby("Cause", as_index=False)[death_count_columns].sum()
     df = df[df["Cause"] != "Other"]
     df = df[df["Cause"] != "All causes"]
@@ -87,10 +88,26 @@ def _get_pictorial_chart_data(df):
                 death_count_column + "icon_count": "icon_count",
             }
         )
-        result_df = pd.concat([result_df, temp_df])
+        # Handle x-axis location
+        counter = 1
+        total_perecnt = 0
+        for _, row in temp_df.iterrows():
+            if row["icon_count"] != 0:
+                total_perecnt += row["percent"]
+            for _ in range(int(row["icon_count"])):
+                row["x_location"] = counter
+                counter += 1
+                result_df = pd.concat([result_df, row.to_frame().T])
+
+        #  Pad "other" data points
+        for i in range(counter, 11):
+            row["x_location"] = counter
+            row["cause"] = "Other"
+            row["percent"] = round(100 - total_perecnt, 2)
+            counter += 1
+            result_df = pd.concat([result_df, row.to_frame().T])
+
     return result_df.to_dict(orient="records")
-
-
 # TODO remove
 _get_pictorial_chart_data(df)
 

@@ -18,6 +18,17 @@ let columns, rows;
 
 let selectedCountry = null;
 
+const ageLabels = [
+  "Less than a year old",
+  "One year old",
+  "Two years old",
+  "Three years old",
+  "Four years old",
+  "Between 5 and 9 years old",
+  "Between 10 and 14 years old",
+  "Between 15 and 19 years old",
+];
+
 async function createFilters(countries) {
   const container = document.getElementById("filters");
   container.innerHTML = "";
@@ -58,6 +69,7 @@ async function updateCharts() {
 
   initLineChart(data["line_chart_data"]);
   drawPieChart(data["pie_chart_data"]);
+  initPictorialChart(data["pictorial_chart_data"]);
 }
 
 function initLineChart(data) {
@@ -227,6 +239,77 @@ function drawPieChart(data) {
     .attr("fill", "#333")
     .text(function (d) {
       return `${d.data.Cause}: ${d.data.percentage.toFixed(1)}%`;
+    });
+}
+
+function initPictorialChart(data) {
+  const margin = { top: 10, right: 30, bottom: 30, left: 70 },
+    width = 700 - margin.left - margin.right,
+    height = 400 - margin.top - margin.bottom;
+  // append the svg object to the body of the page
+  svg = d3
+    .select("#pictorialChart")
+    .append("svg")
+    .attr("width", 900)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
+
+  // Add Y axis
+  const yScale = d3.scaleBand().domain(ageLabels).range([height, 0]);
+
+  // Add Y axis
+  const yAxis = d3.axisLeft(yScale);
+
+  svg
+    .append("g")
+    .attr("transform", `translate( ${margin.left},` + "0)")
+    .call(yAxis);
+
+  // X axis
+  var x = d3.scaleLinear().domain([0, 10]).range([0, width]);
+
+  svg
+    .append("g")
+    .attr("transform", `translate(${margin.left},` + height + ")")
+    .call(d3.axisBottom(x));
+
+  // --- 5. TOOLTIP ---
+  const tooltip = d3.select(".tooltip");
+
+  const mouseover = (event, d) => {
+    tooltip.style("opacity", 1);
+  };
+  const mousemove = (event, d) => {
+    tooltip
+      .html(`<b>Cause:</b> ${d.cause}<br><b>Icons:</b> ${d.icon_count}`)
+      .style("left", event.pageX + 15 + "px")
+      .style("top", event.pageY - 28 + "px");
+  };
+  const mouseleave = (event, d) => {
+    tooltip.style("opacity", 0);
+  };
+
+  // --- 6. DRAWING THE ICONS (PICTORIAL CHART) ---
+  svg
+    .append("g")
+    .selectAll("icon")
+    .data(data)
+    .enter()
+    .append("circle")
+    .attr("transform", `translate( ${margin.left},` + "0)")
+    .attr("cx", function (d) {
+      console.log(d);
+
+      return x(d["x_location"]);
+    })
+    .attr("cy", function (d) {
+      return yScale(d["category"]);
+    })
+    .attr("r", 10)
+    .style("cursor", "pointer")
+    .style("fill", function (d) {
+      "blue";
     });
 }
 
