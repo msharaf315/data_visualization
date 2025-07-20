@@ -179,7 +179,7 @@ async function createFilters() {
   };
   container.appendChild(clearButton);
   
-  // Create all filter dropdowns
+  // Create all filter dropdowns with wrapper divs
   container.appendChild(
     createDropdown("countrySelect", ["", ...filterOptions.countries], "Country", async (val) => {
       selectedCountry = val || null;
@@ -211,12 +211,14 @@ async function createFilters() {
 }
 
 function createDropdown(id, options, label, onChange) {
-  const wrapper = document.createElement("span");
-  wrapper.style.marginRight = "20px";
+  const wrapper = document.createElement("div");
+  wrapper.className = "filter-group";
+  
   const lbl = document.createElement("label");
   lbl.htmlFor = id;
-  lbl.innerText = label + ": ";
+  lbl.innerText = label;
   wrapper.appendChild(lbl);
+  
   const select = document.createElement("select");
   select.id = id;
   options.forEach((option) => {
@@ -239,20 +241,23 @@ function createDropdown(id, options, label, onChange) {
 }
 
 function createYearRange(years) {
-  const wrapper = document.createElement("span");
-  wrapper.style.marginRight = "20px";
+  const wrapper = document.createElement("div");
+  wrapper.className = "filter-group year-range-container";
   
-  //Label
+  // Label
   const lbl = document.createElement("label");
-  lbl.innerText = "Year Range: ";
+  lbl.innerText = "Year Range";
   wrapper.appendChild(lbl);
+  
+  // Container for the select elements
+  const selectsContainer = document.createElement("div");
+  selectsContainer.className = "year-range-selects";
   
   // From dropdown
   const fromSelect = document.createElement("select");
   fromSelect.id = "yearFromSelect";
-  fromSelect.style.marginRight = "5px";
   
-  //Add empty option first
+  // Add empty option first
   const emptyFrom = document.createElement("option");
   emptyFrom.value = "";
   emptyFrom.text = "From";
@@ -266,10 +271,9 @@ function createYearRange(years) {
     fromSelect.appendChild(opt);
   });
   
-  //To dropdown
+  // To dropdown
   const toSelect = document.createElement("select");
   toSelect.id = "yearToSelect";
-  toSelect.style.marginLeft = "5px";
   
   // Add empty option first
   const emptyTo = document.createElement("option");
@@ -296,9 +300,17 @@ function createYearRange(years) {
     await updateCharts();
   };
   
-  wrapper.appendChild(fromSelect);
-  wrapper.appendChild(document.createTextNode(" - "));
-  wrapper.appendChild(toSelect);
+  // Add elements to containers
+  selectsContainer.appendChild(fromSelect);
+  
+  const separator = document.createElement("span");
+  separator.className = "year-separator";
+  separator.textContent = "—";
+  selectsContainer.appendChild(separator);
+  
+  selectsContainer.appendChild(toSelect);
+  
+  wrapper.appendChild(selectsContainer);
   
   return wrapper;
 }
