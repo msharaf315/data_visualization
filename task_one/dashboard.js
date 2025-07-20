@@ -198,7 +198,12 @@ async function createFilters() {
   );
   
   container.appendChild(
-    createDropdown("sexSelect", ["", ...filterOptions.sex], "Sex", async (val) => {
+    createDropdown("sexSelect", [
+      { value: "", text: "" },
+      { value: "1", text: "Male" },
+      { value: "2", text: "Female" },
+      { value: "9", text: "Sex unspecified" }
+    ], "Sex", async (val) => {
       selectedSex = val || null;
       await updateCharts();
     })
@@ -216,8 +221,14 @@ function createDropdown(id, options, label, onChange) {
   select.id = id;
   options.forEach((option) => {
     const opt = document.createElement("option");
-    opt.value = option;
-    opt.text = option;
+    // Check if option is an object with value/text or just a simple value
+    if (typeof option === 'object' && option !== null) {
+      opt.value = option.value;
+      opt.text = option.text;
+    } else {
+      opt.value = option;
+      opt.text = option;
+    }
     select.appendChild(opt);
   });
   select.onchange = function () {
@@ -308,7 +319,7 @@ function initLineChart(data) {
   var formatTime = d3.timeFormat("%Y");
   data = data.map((item) => ({
     ...item,
-    date: new Date(item.year, 0, 1), // Month is 0-indexed, so 0 = January
+    date: new Date(item.year, 0, 1), //
   }));
 
   // set the dimensions and margins of the graph
