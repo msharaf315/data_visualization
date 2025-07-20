@@ -109,15 +109,26 @@ https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js
 <!-- Tab 3 -->
 <div id="Dashboard" class="tabcontent dashboardContainer">
     <div class="header">
-        <h1>What Is Killing Our Children?</h1>
+        <h1 style="font-size: 1em; margin-top:1px">What Is Killing Our Children?</h1>
     </div>
     <!--nitre filtre l3aziz-->
     <div id="filters"></div>
-    <div class="dashboardBody grid-container">
-        <div class="line-chart-container" id="line-chart-container">
-            <h2 style="width: 460px; text-align:center;">Mortality by year</h2>
-            <div id="lineChart"></div>
-        </div>
+    <div class="dashboardBody">
+        <div class="two-chart-row ">
+            <!-- Line chart -->
+            <div class="line-chart-container" id="line-chart-container">
+                <h2 style="width: 460px; text-align:center;">Mortality by year</h2>
+                <div id="lineChart"></div>
+            </div>
+            <!-- Bar Chart -->
+            <div class="line-chart-container">
+                <h2 style="width: 460px; text-align:center;">Top 10 killers</h2>
+                <div id="barChart" style="width: 700px; margin: 0 auto; min-height: 400px;"></div>
+            </div>
+            </div>
+            
+            
+            <!-- Pictorial -->
         <div id="pictorial-container">
             <h2 style="width: 460px; text-align:center;">Top killers</h2>
             <div id="pictorialChart"></div>
@@ -126,12 +137,13 @@ https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js
                 <svg id="pictorial-legend-content" height=135 width=600></svg>
             </div>
         </div>
+        <!-- Pie Chart -->
         <div>
             <h2>Pie Chart: Causes of Death as Percentage</h2>
             <div id="pieChart"></div>
             <div id="pieTooltip"></div>
         </div>
-        <div id="barChart" style="width: 700px; margin: 0 auto; min-height: 400px;"></div>
+
     </div>
 
 

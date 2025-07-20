@@ -40,8 +40,9 @@ const startColor = "#FF0000"; // Red
 const endColor = "#000000"; // Black
 // Create a color interpolator from red to black
 const interpolateColor = d3.interpolateRgb(startColor, endColor);
-const pictorial_colors = Array.from({ length: 20 }, (_, i) =>
-  interpolateColor(i / (20 - 1))
+const numberOfColors = 20;
+const pictorial_colors = Array.from({ length: numberOfColors }, (_, i) =>
+  interpolateColor(i / (numberOfColors - 1))
 );
 // pictorial_colors = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728"];
 
@@ -309,7 +310,7 @@ async function createFilters() {
   // Add "Clear All Filters" button
   const clearButton = document.createElement("button");
   clearButton.textContent = "Clear All Filters";
-  clearButton.style.marginRight = "20px";
+  // clearButton.style.marginRight = "20px";
   clearButton.style.padding = "5px 10px";
   clearButton.onclick = async () => {
     selectedCountry = null;
@@ -333,7 +334,6 @@ async function createFilters() {
 
     await updateCharts();
   };
-  container.appendChild(clearButton);
 
   // Create all filter dropdowns with wrapper divs
   container.appendChild(
@@ -350,19 +350,7 @@ async function createFilters() {
 
   // Add year range dropdown and sorted
   container.appendChild(createYearRange(filterOptions.years.sort()));
-
-  container.appendChild(
-    createDropdown(
-      "causeSelect",
-      ["", ...filterOptions.causes],
-      "Cause",
-      async (val) => {
-        selectedCause = val || null;
-        await updateCharts();
-      }
-    )
-  );
-
+  // Sex filter
   container.appendChild(
     createDropdown(
       "sexSelect",
@@ -379,6 +367,20 @@ async function createFilters() {
       }
     )
   );
+  // Cause filter
+  container.appendChild(
+    createDropdown(
+      "causeSelect",
+      ["", ...filterOptions.causes],
+      "Cause",
+      async (val) => {
+        selectedCause = val || null;
+        await updateCharts();
+      }
+    )
+  );
+
+  container.appendChild(clearButton);
 }
 
 function createDropdown(id, options, label, onChange) {
