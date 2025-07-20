@@ -101,11 +101,17 @@ def _get_pictorial_chart_data(df):
 
         #  Pad "other" data points
         for i in range(counter, 11):
-            row["x_location"] = counter
-            row["cause"] = "Other"
-            row["percent"] = round(100 - total_perecnt, 2)
+            # columns=["cause", "percent", "icon_count", "category", "x_location"]
+            empty_series = pd.Series(dtype=float)
+            empty_series["cause"] = "Other"
+            empty_series["percent"] = round(100 - total_perecnt, 2)
+            empty_series["icon_count"] = 0
+            empty_series["category"] = _get_cat_name_from_column_name(
+                death_count_column
+            )
+            empty_series["x_location"] = counter
             counter += 1
-            result_df = pd.concat([result_df, row.to_frame().T])
+            result_df = pd.concat([result_df, empty_series.to_frame().T])
 
     return result_df.to_dict(orient="records")
 
