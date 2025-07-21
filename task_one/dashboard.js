@@ -495,6 +495,7 @@ async function updateCharts() {
   d3.select("#barChart").selectAll("*").remove();
   d3.select("#barChart").selectAll("*").remove();
   d3.select("#distribution-chart").selectAll("*").remove();
+  d3.select("#distribution-chart").selectAll("*").remove();
 
   data = await getData();
 
@@ -506,7 +507,6 @@ async function updateCharts() {
   }
   drawDistributionChart(data["distribution_data"]);
 }
-
 
 function initLineChart(data) {
   var formatTime = d3.timeFormat("%Y");
@@ -598,6 +598,7 @@ function initLineChart(data) {
       return y(d.total_death);
     })
     .attr("fill", "#a60800")
+    .style("cursor", "pointer")
     .on("mouseover", function (event, d) {
       div.transition().duration(200).style("opacity", 1);
       div
@@ -613,6 +614,16 @@ function initLineChart(data) {
     })
     .on("mouseout", function (d) {
       div.transition().duration(500).style("opacity", 0);
+    })
+    .on("click", async function (event, d) {
+      // Call your filter function with the 'year' attribute of the data point
+      if (selectedYear == d.year) {
+        selectedYear = null;
+      } else {
+        selectedYear = d.year;
+      }
+      div.transition().duration(500).style("opacity", 0);
+      await updateCharts();
     });
 }
 
