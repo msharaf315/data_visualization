@@ -2,6 +2,7 @@
 import numpy as np 
 import pandas as pd
 from fastapi.middleware.cors import CORSMiddleware
+import math
 
 # %%
 df = pd.read_csv("minors_causes_of_death.csv")
@@ -33,6 +34,19 @@ def _get_pie_chart_data(df):
 
 def _get_map_chart_data(df):
     pass
+
+
+def _get_distribution_data(df):
+    grouped_df = df[death_count_columns].sum()
+    grouped_df = (
+        grouped_df.to_frame().reset_index().rename(columns={"index": "category"})
+    )
+    grouped_df = grouped_df.rename(columns={0: "value"})
+    result = grouped_df.to_dict(orient="records")
+    for item in result:
+        item["category"] = _get_cat_name_from_column_name(item["category"])
+    return result
+
 
 def _get_bar_chart_data(df, group_by="Cause"):
     """
@@ -102,10 +116,11 @@ def _get_pictorial_chart_data(df):
         for _, row in temp_df.iterrows():
             if row["icon_count"] != 0:
                 total_perecnt += row["percent"]
-            for _ in range(int(row["icon_count"])):
-                row["x_location"] = counter
-                counter += 1
-                result_df = pd.concat([result_df, row.to_frame().T])
+            if not math.isnan(row["icon_count"]):
+                for _ in range(int(row["icon_count"])):
+                    row["x_location"] = counter
+                    counter += 1
+                    result_df = pd.concat([result_df, row.to_frame().T])
 
         #  Pad "other" data points
         for i in range(counter, 11):
@@ -171,16 +186,15 @@ def get_data(df, country=None, sex=None, year=None, cause=None, year_from=None, 
     df = _filter_df(df, country, year, cause, sex, year_from, year_to)
     line_chart_data = _get_line_chart_data(df)
     pie_chart_data = _get_pie_chart_data(df)
-    map_chart_data = _get_map_chart_data(df)
     pictorial_chart_data = _get_pictorial_chart_data(df)
     bar_chart_data = _get_bar_chart_data(df)
-
+    distribution_data = _get_distribution_data(df)
     return {
         "line_chart_data": line_chart_data,
-        "map_chart_data": map_chart_data,
         "pie_chart_data": pie_chart_data,
         "pictorial_chart_data": pictorial_chart_data,
         "bar_chart_data": bar_chart_data,
+        "distribution_data": distribution_data,
     }
 
 

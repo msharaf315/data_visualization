@@ -491,9 +491,10 @@ function createYearRange(years) {
 async function updateCharts() {
   // Clear existing charts first
   d3.select("#lineChart").selectAll("*").remove();
-  d3.select("#pieChart").selectAll("*").remove();
   d3.select("#pictorialChart").selectAll("*").remove();
   d3.select("#barChart").selectAll("*").remove();
+  d3.select("#barChart").selectAll("*").remove();
+  d3.select("#distribution-chart").selectAll("*").remove();
 
   data = await getData();
 
@@ -503,6 +504,7 @@ async function updateCharts() {
   if (data["bar_chart_data"] && data["bar_chart_data"].length > 0) {
     drawBarChart(data["bar_chart_data"]);
   }
+  drawDistributionChart(data["distribution_data"]);
 }
 
 function initLineChart(data) {
@@ -759,20 +761,11 @@ function initPictorialChart(data) {
     .call(d3.axisBottom(xScale));
 
   // --- 5. TOOLTIP ---
-  const tooltip = d3.select(".tooltip");
-
-  const mouseover = (event, d) => {
-    tooltip.style("opacity", 1);
-  };
-  const mousemove = (event, d) => {
-    tooltip
-      .html(`<b>Cause:</b> ${d.cause}<br><b>Icons:</b> ${d.icon_count}`)
-      .style("left", event.pageX + 15 + "px")
-      .style("top", event.pageY - 28 + "px");
-  };
-  const mouseleave = (event, d) => {
-    tooltip.style("opacity", 0);
-  };
+  var div = d3
+    .select("body")
+    .append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
 
   const svg_string = `
 <g> <path id="_x36__3_" d="M173.7,171.4c-2.1,0.8-3.7,2.9-3.7,5.2l-0.2,2.3c-1,10.6-19.1,18.5-41.8,18.5s-40.8-7.9-41.8-18.5l-0.2-2.1   c-0.2-2.3-1.5-4.4-3.9-5.2c0,0,0,0-0.2,0c-4.4-1.7-9.1,1.5-8.7,6.2l1.3,19.3c0.8,10,19.3,25.6,53.4,25.6   c33.1,0,52.6-15.6,53.4-25.6l1.3-19.5C182.9,173,178.3,169.7,173.7,171.4C174,171.4,174,171.4,173.7,171.4z"/>
@@ -806,8 +799,102 @@ function initPictorialChart(data) {
         return "black";
       }
       return colorScale(d.cause);
+    })
+    .on("mouseover", function (event, d) {
+      console.log(d);
+
+      div.transition().duration(200).style("opacity", 1);
+      div
+        .html(
+          "Cause: " +
+            d.cause +
+            "<br/>" +
+            "Percentage of kills: " +
+            d.percent +
+            "%"
+        )
+        .style("left", event.pageX + "px")
+        .style("top", event.pageY - 28 + "px");
+    })
+    .on("mouseout", function (d) {
+      div.transition().duration(500).style("opacity", 0);
     });
   render_pictorial_legend(data, colorScale);
+}
+
+function drawDistributionChart(data) {
+  d3.select("#distribution-chart").selectAll("*").remove();
+
+  const margin = { top: 10, right: 30, bottom: 30, left: 100 },
+    width = 900 - margin.left - margin.right,
+    height = 400 - margin.top - margin.bottom;
+
+  const svg = d3
+    .select("#distribution-chart")
+    .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
+
+  // Axe Y (labels)
+  const y = d3
+    .scaleBand()
+    .domain(data.map((d) => d.category))
+    .range([0, height])
+    .padding(0.2);
+
+  const yAxis = svg
+    .append("g")
+    .attr("transform", `translate( ${margin.left},` + "0)")
+    .call(d3.axisLeft(y));
+
+  // Axe X (valeurs)
+  const x = d3
+    .scaleLinear()
+    .domain([0, d3.max(data, (d) => d.value)])
+    .range([0, width - margin.left - margin.right]);
+
+  svg
+    .append("g")
+    .attr("transform", `translate(${margin.left},${height})`)
+    .call(d3.axisBottom(x));
+
+  // Tool tip
+  var div = d3
+    .select("body")
+    .append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
+
+  // Barres horizontales
+  svg
+    .selectAll("rect")
+    .data(data)
+    .enter()
+    .append("rect")
+    .attr("y", (d) => y(d.category))
+    .attr("x", 0)
+    .attr("height", y.bandwidth())
+    .attr("width", (d) => x(d.value))
+    .attr("fill", "#000000")
+    .attr("transform", `translate( ${margin.left},` + "0)")
+    .on("mouseover", function (event, d) {
+      div.transition().duration(200).style("opacity", 1);
+      div
+        .html(
+          "Age Group: " +
+            d.category +
+            "<br/>" +
+            "Death count:" +
+            d.value.toLocaleString()
+        )
+        .style("left", event.pageX + "px")
+        .style("top", event.pageY - 28 + "px");
+    })
+    .on("mouseout", function (d) {
+      div.transition().duration(500).style("opacity", 0);
+    });
 }
 
 function drawBarChart(data) {
@@ -875,7 +962,6 @@ function drawBarChart(data) {
     .attr("transform", `translate(${margin.left},${height})`)
     .call(d3.axisBottom(x));
 
-  // Tool tip
   // Tool tip
   var div = d3
     .select("#bar-chart-container")
