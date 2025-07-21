@@ -507,6 +507,7 @@ async function updateCharts() {
   drawDistributionChart(data["distribution_data"]);
 }
 
+
 function initLineChart(data) {
   var formatTime = d3.timeFormat("%Y");
   data = data.map((item) => ({
@@ -596,7 +597,7 @@ function initLineChart(data) {
     .attr("cy", function (d) {
       return y(d.total_death);
     })
-    .attr("fill", "red")
+    .attr("fill", "#a60800")
     .on("mouseover", function (event, d) {
       div.transition().duration(200).style("opacity", 1);
       div
@@ -877,7 +878,7 @@ function drawDistributionChart(data) {
     .attr("x", 0)
     .attr("height", y.bandwidth())
     .attr("width", (d) => x(d.value))
-    .attr("fill", "#000000")
+    .attr("fill", "#a60800")
     .attr("transform", `translate( ${margin.left},` + "0)")
     .on("mouseover", function (event, d) {
       div.transition().duration(200).style("opacity", 1);
@@ -979,7 +980,7 @@ function drawBarChart(data) {
     .attr("x", 0)
     .attr("height", y.bandwidth())
     .attr("width", (d) => x(d.value))
-    .attr("fill", "#000000")
+    .attr("fill", "#a60800")
     .attr("transform", `translate( ${margin.left},` + "0)")
     .on("mouseover", function (event, d) {
       div.transition().duration(200).style("opacity", 1);
