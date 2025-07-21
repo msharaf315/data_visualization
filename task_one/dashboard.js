@@ -805,7 +805,6 @@ function initPictorialChart(data) {
 
       return `translate(${translateX - 12}, ${translateY}) scale(0.1)`;
     })
-
     .attr("fill", (d) => {
       if (d.cause == "Other") {
         return "black";
@@ -830,6 +829,16 @@ function initPictorialChart(data) {
     })
     .on("mouseout", function (d) {
       div.transition().duration(500).style("opacity", 0);
+    })
+    .on("click", async function (event, d) {
+      // Call your filter function with the 'year' attribute of the data point
+      if (selectedCause == d.cause) {
+        selectedCause = null;
+      } else {
+        selectedCause = d.cause;
+      }
+      div.transition().duration(500).style("opacity", 0);
+      await updateCharts();
     });
   render_pictorial_legend(data, colorScale);
 }
