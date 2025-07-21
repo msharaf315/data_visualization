@@ -1001,6 +1001,7 @@ function drawBarChart(data) {
     .attr("height", y.bandwidth())
     .attr("width", (d) => x(d.value))
     .attr("fill", "#a60800")
+    .style("cursor", "pointer")
     .attr("transform", `translate( ${margin.left},` + "0)")
     .on("mouseover", function (event, d) {
       div.transition().duration(200).style("opacity", 1);
@@ -1017,6 +1018,16 @@ function drawBarChart(data) {
     })
     .on("mouseout", function (d) {
       div.transition().duration(500).style("opacity", 0);
+    })
+    .on("click", async function (event, d) {
+      // Call your filter function with the 'year' attribute of the data point
+      if (selectedCause == d.label) {
+        selectedCause = null;
+      } else {
+        selectedCause = d.label;
+      }
+      div.transition().duration(500).style("opacity", 0);
+      await updateCharts();
     });
 }
 
